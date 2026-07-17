@@ -1,5 +1,8 @@
 # Martech AI Skills and Tools
 
+[![skills.sh](https://img.shields.io/badge/skills.sh-martech--teardown-000000?logo=vercel&logoColor=white)](https://skills.sh/s/martech-teardown)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A personal, vendor-neutral collection of **marketing-technology tooling for AI agents** (and humans) —
 Claude skills and read-only command-line clients for the martech / adtech stack.
 
