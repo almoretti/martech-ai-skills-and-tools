@@ -22,14 +22,15 @@ with the standalone skills under [`Skills/`](Skills). Add the marketplace once, 
 > (and its skill) per its own README under `CLI/`.
 
 **Or via the `skills` CLI** ([skills.sh](https://skills.sh), works across Claude Code, Cursor,
-Copilot, etc.) — no registration needed, it resolves the GitHub repo directly. Scope to the
-marketplace skill by name so it doesn't also pull the CLI-bundled skills:
+Copilot, etc.) — no registration needed, it resolves the GitHub repo directly. Run it and
+**pick the skill(s) you want from the interactive selector**:
 
 ```
-npx skills add almoretti/martech-ai-skills-and-tools --skill martech-teardown
-# or list everything the repo exposes first:
-npx skills add almoretti/martech-ai-skills-and-tools --list
+npx skills add almoretti/martech-ai-skills-and-tools
 ```
+
+The selector lists every skill in the repo (including the CLI-bundled ones) — choose
+`martech-teardown`. To skip the prompt: add `--skill martech-teardown`, or `--list` to just see them.
 
 _Maintainers:_ `.claude-plugin/plugin.json` and `marketplace.json` are **generated** from the skills
 present + the `version` in `package.json`. After adding/renaming a skill or bumping the version, run
