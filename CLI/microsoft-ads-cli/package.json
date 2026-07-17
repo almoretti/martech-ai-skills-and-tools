@@ -1,0 +1,47 @@
+{
+  "name": "microsoft-ads-cli",
+  "version": "2.0.0",
+  "description": "Microsoft Advertising (Bing Ads) CLI & Skills for AI agents (and humans)",
+  "type": "module",
+  "bin": {
+    "microsoft-ads-cli": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepack": "pnpm build"
+  },
+  "author": "Alessandro Moretti",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/almoretti/microsoft-ads-cli.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "microsoft-advertising",
+    "ads",
+    "cli",
+    "ai-agent",
+    "api"
+  ],
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  },
+  "bugs": {
+    "url": "https://github.com/almoretti/microsoft-ads-cli/issues"
+  },
+  "homepage": "https://github.com/almoretti/microsoft-ads-cli#readme"
+}

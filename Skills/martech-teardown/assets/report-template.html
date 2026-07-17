@@ -1,0 +1,178 @@
+<!--
+  MartechTearDown — generic report template.
+  Self-contained, vendor-neutral HTML. Clone this, keep the <style>, header,
+  disclaimer, and footer as-is, and fill the <section> bodies following
+  references/report-structure.md. Replace __TARGET__ with the company name.
+  Do NOT introduce any third-party brand's colours or logo — this is the
+  neutral house style. (If the operator explicitly wants their own brand skin,
+  that's a different, brand-specific design skill — not this template.)
+
+  Component classes available (same set as the section examples below):
+  .cards>.card(.v/.l) · .callout · .scrollY>table · .pill(.pill-green/-orange/
+  -red/-grey/-accent) · .alert(.alert-positive/-warning/-negative/-info) ·
+  .split · .flow>.step · .gap(.gapnum/.body) · <details><summary>
+-->
+<title>__TARGET__ · Martech Teardown</title>
+<style>
+:root{
+--chrome:#242019;--chrome-2:#2f2a20;--accent:#f0a55e;--accent-2:#a85416;
+--bg:#faf7f3;--panel:#fff;--panel-2:#f3eee7;--fg:#282420;--fg-2:#57504a;--fg-3:#8b8178;
+--keyline:#e8e1d7;
+--ok-bg:#d9f0e3;--ok-fg:#0a6b45;--no-bg:#f7ddd7;--no-fg:#b23a2a;
+--warn-bg:#fbe7cf;--warn-fg:#9a4d10;--info-bg:#fcedde;--info-fg:#a85416;
+--r-sm:4px;--r-md:8px;--r-lg:12px;--r-pill:1000px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+body{font-family:'DM Sans',system-ui,sans-serif;font-size:14px;font-weight:400;line-height:1.6;color:var(--fg);background:var(--bg)}
+.page-wrap{max-width:1180px;margin:0 auto;padding:0 24px 48px}
+header{background:var(--chrome);color:#fff;padding:0 24px;position:sticky;top:0;z-index:20}
+.header-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;min-height:64px;gap:24px;flex-wrap:wrap}
+.brandline{display:flex;align-items:center;gap:11px}
+.mtd-logo{display:flex;align-items:center;gap:9px;color:var(--accent)}
+.mtd-logo .word{font-weight:700;font-size:15px;letter-spacing:-.02em;color:#fff}
+.mtd-logo .word b{color:var(--accent);font-weight:700}
+.divider{color:var(--fg-3);font-size:18px;font-weight:200}
+.brandline h1{font-size:15px;font-weight:500;letter-spacing:-.01em;color:#fff}
+.brandline .meta{font-size:12px;color:rgba(255,255,255,.55);margin-top:1px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{padding:6px 12px;border-radius:var(--r-pill);font-size:12.5px;font-weight:500;color:rgba(255,255,255,.62);text-decoration:none;transition:.15s}
+nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+nav a.active{background:var(--accent);color:#3d2408}
+.disclaimer-strip{background:var(--chrome-2);color:rgba(255,255,255,.6);font-size:11px;text-align:center;padding:6px 24px;letter-spacing:.02em}
+section{background:var(--panel);border:1px solid var(--keyline);border-radius:var(--r-lg);padding:26px;margin-top:20px}
+section h2{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--fg);margin-bottom:14px}
+section h3{font-size:13.5px;font-weight:700;color:var(--fg);margin:20px 0 8px}
+p{margin-bottom:10px;color:var(--fg-2)}p.lead{color:var(--fg);font-size:15px}
+ul{margin:6px 0 12px 20px;color:var(--fg-2)}li{margin-bottom:5px}
+strong{color:var(--fg);font-weight:700}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--panel-2);padding:1px 5px;border-radius:var(--r-sm);color:var(--accent-2)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2);margin-bottom:8px}
+.cards{display:flex;gap:12px;flex-wrap:wrap}
+.card{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--keyline);border-radius:var(--r-lg);padding:18px}
+.card .v{font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--fg)}
+.card .l{font-size:12px;color:var(--fg-3);margin-top:4px}
+.callout{border-left:3px solid var(--accent);background:var(--info-bg);border-radius:0 var(--r-md) var(--r-md) 0;padding:14px 16px;margin-top:16px}
+.callout h2{font-size:13px;font-weight:700;color:var(--info-fg);margin-bottom:6px}
+.callout p{font-size:13px;color:var(--fg-2)}
+.scrollY{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+thead tr{background:var(--panel-2)}
+th{text-align:left;padding:10px 12px;font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-3);border-bottom:1px solid var(--keyline);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--keyline);color:var(--fg-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.id,code.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--fg-3)}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-pill);font-size:10.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.pill-green{background:var(--ok-bg);color:var(--ok-fg)}.pill-red{background:var(--no-bg);color:var(--no-fg)}
+.pill-orange,.pill-accent{background:var(--warn-bg);color:var(--warn-fg)}.pill-grey{background:var(--panel-2);color:var(--fg-3)}
+.alert{padding:12px 16px;border-radius:var(--r-md);font-size:13px;margin-top:12px}
+.alert-positive{background:var(--ok-bg);color:var(--ok-fg)}.alert-negative{background:var(--no-bg);color:var(--no-fg)}
+.alert-warning{background:var(--warn-bg);color:var(--warn-fg)}.alert-info{background:var(--info-bg);color:var(--info-fg)}
+.alert strong,.alert em,.alert code,.callout strong,.callout code{color:inherit;background:transparent}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.split{grid-template-columns:1fr}}
+.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:14px 0}
+.flow .step{flex:1;min-width:120px;background:var(--panel-2);border:1px solid var(--keyline);border-radius:var(--r-md);padding:12px 14px}
+.flow .step .n{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-2);margin-bottom:4px}
+.flow .step .d{font-size:12.5px;color:var(--fg-2)}
+.flow .arrow{align-self:center;color:var(--fg-3);font-size:16px}
+details{border:1px solid var(--keyline);border-radius:var(--r-md);overflow:hidden;margin-top:12px}
+summary{padding:12px 16px;font-weight:700;font-size:13px;cursor:pointer;background:var(--panel-2);list-style:none;color:var(--fg)}
+summary::after{content:' ▾';color:var(--fg-3)}details[open] summary::after{content:' ▴'}
+details>*:not(summary){padding:16px}
+footer{background:var(--chrome);color:rgba(255,255,255,.5);padding:22px 24px;margin-top:40px}
+footer .row{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;font-size:12px;flex-wrap:wrap}
+.gapnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#3d2408;font-size:12px;font-weight:700;margin-right:8px;flex-shrink:0}
+.gap{display:flex;gap:0;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--keyline)}
+.gap:last-child{border-bottom:none}.gap .body{flex:1}.gap .body h3{margin:0 0 4px}
+.dk{--chrome:#1b1813;--chrome-2:#232019;--bg:#141210;--panel:#1e1a16;--panel-2:#272219;--fg:#f0eae2;--fg-2:#c6bcb0;--fg-3:#8f8579;--keyline:#332d24;--accent-2:#f2ad6a;--info-bg:#2c2216;--info-fg:#f0c79a;--ok-bg:#122c20;--ok-fg:#79dcac;--no-bg:#331d19;--no-fg:#eda99c;--warn-bg:#322515;--warn-fg:#f0b579}
+:root[data-theme="dark"]{--chrome:#1b1813;--chrome-2:#232019;--bg:#141210;--panel:#1e1a16;--panel-2:#272219;--fg:#f0eae2;--fg-2:#c6bcb0;--fg-3:#8f8579;--keyline:#332d24;--accent-2:#f2ad6a;--info-bg:#2c2216;--info-fg:#f0c79a;--ok-bg:#122c20;--ok-fg:#79dcac;--no-bg:#331d19;--no-fg:#eda99c;--warn-bg:#322515;--warn-fg:#f0b579}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--chrome:#1b1813;--chrome-2:#232019;--bg:#141210;--panel:#1e1a16;--panel-2:#272219;--fg:#f0eae2;--fg-2:#c6bcb0;--fg-3:#8f8579;--keyline:#332d24;--accent-2:#f2ad6a;--info-bg:#2c2216;--info-fg:#f0c79a;--ok-bg:#122c20;--ok-fg:#79dcac;--no-bg:#331d19;--no-fg:#eda99c;--warn-bg:#322515;--warn-fg:#f0b579}}
+</style>
+
+<!-- MartechTearDown logo (invented house mark: a stack with its top layer lifting off) -->
+<header>
+  <div class="header-inner">
+    <div class="brandline">
+      <span class="mtd-logo">
+        <svg viewBox="0 0 28 28" width="26" height="26" fill="none" aria-hidden="true">
+          <rect x="3" y="18" width="22" height="4.6" rx="2.3" fill="currentColor"/>
+          <rect x="3" y="11.5" width="22" height="4.6" rx="2.3" fill="currentColor" opacity="0.62"/>
+          <rect x="6.5" y="4" width="18.5" height="4.6" rx="2.3" fill="currentColor" opacity="0.34" transform="rotate(-9 15.75 6.3)"/>
+        </svg>
+        <span class="word">Martech<b>TearDown</b></span>
+      </span>
+      <span class="divider">/</span>
+      <div><h1>__TARGET__</h1><div class="meta">Martech teardown · competitive intelligence</div></div>
+    </div>
+    <nav>
+      <a href="#summary" class="active">Summary</a>
+      <a href="#stack">Stack</a>
+      <a href="#cms">CMS</a>
+      <a href="#tracking">Tracking</a>
+      <a href="#identity">Identity</a>
+      <a href="#match">Measurement</a>
+      <a href="#vendors">Vendors</a>
+      <a href="#gaps">Gaps</a>
+      <a href="#lessons">Lessons</a>
+    </nav>
+  </div>
+</header>
+<div class="disclaimer-strip">Competitive intelligence · built from public + own-network signals only · no private/back-end data accessed</div>
+
+<div class="page-wrap">
+
+  <!-- ========= FILL SECTIONS BELOW per references/report-structure.md ========= -->
+  <!-- Keep confidence tags: <span class="pill pill-green">Confirmed</span> /
+       pill-orange Inferred / pill-grey Assumed. Keep evidence in every Confirmed row. -->
+
+  <section id="summary">
+    <div class="eyebrow">Executive summary</div>
+    <p class="lead"><!-- 2–4 sentences: business model, GTM motion, defining trait of the stack --></p>
+    <div class="cards" style="margin-top:16px">
+      <div class="card"><div class="v">—</div><div class="l">stat</div></div>
+      <div class="card"><div class="v">—</div><div class="l">stat</div></div>
+      <div class="card"><div class="v">—</div><div class="l">stat</div></div>
+      <div class="card"><div class="v">—</div><div class="l">stat</div></div>
+    </div>
+    <div class="callout"><h2>Headline takeaway</h2><p><!-- one line --></p></div>
+  </section>
+
+  <section id="stack">
+    <div class="eyebrow">The stack</div>
+    <h2>Full martech stack by category</h2>
+    <div class="scrollY"><table>
+      <thead><tr><th>Space</th><th>Tool</th><th>Confidence</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Web platform</td><td>—</td><td><span class="pill pill-green">Confirmed</span></td><td>—</td></tr>
+        <!-- …one row per space… -->
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- sections: #cms  #tracking  #identity  #match  #vendors  #gaps  (see report-structure.md) -->
+
+  <section id="lessons">
+    <div class="eyebrow">So what</div>
+    <h2>Lessons</h2>
+    <!-- If the operator's OWN stack is known, make this a two-column
+         "worth stealing" vs "where you must diverge" and respect their constraints.
+         If not known, keep it a vendor-neutral "notable patterns" list. -->
+  </section>
+
+  <div style="text-align:center;margin-top:24px"><span class="pill pill-grey">End of teardown</span></div>
+</div>
+
+<footer>
+  <div class="row">
+    <span class="mtd-logo">
+      <svg viewBox="0 0 28 28" width="18" height="18" fill="none" aria-hidden="true">
+        <rect x="3" y="18" width="22" height="4.6" rx="2.3" fill="currentColor"/>
+        <rect x="3" y="11.5" width="22" height="4.6" rx="2.3" fill="currentColor" opacity="0.62"/>
+        <rect x="6.5" y="4" width="18.5" height="4.6" rx="2.3" fill="currentColor" opacity="0.34" transform="rotate(-9 15.75 6.3)"/>
+      </svg>
+      <span class="word" style="font-size:12px">Martech<b>TearDown</b></span>
+    </span>
+    <span>· generated from public signals · __DATE__</span>
+  </div>
+</footer>

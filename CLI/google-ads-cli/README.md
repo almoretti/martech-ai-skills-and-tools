@@ -1,0 +1,387 @@
+# google-ads-cli
+
+Google Ads CLI & Skills for AI agents (and humans). Run custom GAQL queries, pull campaign and keyword stats, navigate MCC account hierarchies, audit conversion tracking, and more.
+
+**Works with:** OpenClaw, Claude Code, Cursor, Codex, and any agent that can run shell commands.
+
+## Installation
+
+Tell your AI agent (e.g. OpenClaw):
+
+> Install this CLI and skills from https://github.com/almoretti/google-ads-cli
+
+Or install manually:
+
+```bash
+npm install -g google-ads-cli
+
+# Add skills for AI agents (Claude Code, Cursor, Codex, etc.)
+npx skills add almoretti/google-ads-cli
+```
+
+Or run directly: `npx google-ads-cli --help`
+
+## How it works
+
+Built on the official [Google Ads API v23](https://developers.google.com/google-ads/api/docs/start) with GAQL (Google Ads Query Language), this CLI authenticates via OAuth2 user credentials and a developer token, providing read-only access to the Google Ads API.
+
+Core endpoints covered:
+
+- **Customer accounts** -- list accessible accounts, inspect individual customers, browse MCC hierarchies
+- **Campaigns & budgets** -- list campaigns with status filtering, inspect campaign budgets
+- **Ad groups & ads** -- browse ad groups and ads with campaign/status filters
+- **Keywords** -- list keywords (ad group criteria) with filtering
+- **Performance stats** -- campaign, ad group, ad, and keyword-level stats with date ranges and segment breakdowns
+- **Audiences & user lists** -- campaign audience performance and remarketing lists
+- **Assets & extensions** -- images, videos, sitelinks, and campaign-level asset links
+- **Conversions & billing** -- conversion actions, billing setup, account budgets
+- **GAQL query** -- run arbitrary Google Ads Query Language queries for any data not covered by built-in commands
+- **Change history** -- recent change status records
+
+## Setup
+
+```bash
+google-ads-cli auth login \
+  --developer-token=xxx \
+  --client-id=xxx \
+  --client-secret=xxx
+```
+
+**How to get the values:**
+
+1. **developer_token**: Sign in to your Google Ads **manager account** and open the [API Center](https://ads.google.com/aw/apicenter). Copy your developer token. If you don't have one, apply for access on that page. The default Explorer Access level is sufficient for read-only use.
+2. **client_id & client_secret**: Go to [Google Cloud Console > Credentials](https://console.cloud.google.com/apis/credentials), click **Create Credentials > OAuth client ID**, select **Desktop app**, and create it. Copy the client ID and client secret. Make sure the [Google Ads API](https://console.cloud.google.com/apis/library/googleads.googleapis.com) is enabled in your project.
+3. **login_customer_id** (optional): Required when accessing accounts via a Manager (MCC) account. Add `"login_customer_id": "1234567890"` to your credentials file (10 digits, no dashes).
+
+This opens your browser for Google authorization. Make sure you sign in with a Google account that has access to the Google Ads data you want to use. After you approve, credentials are saved to `~/.config/google-ads-cli/credentials.json` and all subsequent commands work automatically. Tokens are refreshed as needed.
+
+> **Note:** Google Ads API does not support service accounts. You must use OAuth2 user credentials.
+
+### Alternative: Environment variables
+
+For CI/CD or automation, you can set credentials via environment variables:
+
+```bash
+export GOOGLE_ADS_ACCESS_TOKEN="your_oauth2_access_token"
+export GOOGLE_ADS_DEVELOPER_TOKEN="your_developer_token"
+export GOOGLE_ADS_LOGIN_CUSTOMER_ID="1234567890"  # optional, for MCC accounts
+```
+
+## Entity hierarchy
+
+Google Ads uses this hierarchy:
+
+```
+Manager Account (MCC)
+ └── Customer Account (1234567890)
+      ├── Campaign
+      │    └── Ad Group
+      │         ├── Ad (Ad Group Ad)
+      │         └── Keyword (Ad Group Criterion)
+      ├── Campaign Budget
+      ├── Conversion Action
+      ├── User List (remarketing)
+      └── Asset (images, videos, sitelinks, etc.)
+```
+
+Customer IDs are 10-digit numbers (e.g., `1234567890`). Dashes are stripped automatically.
+
+## Monetary values
+
+Google Ads uses **micros**: 1 dollar = 1,000,000 micros. All cost/bid/budget values are in micros. Divide by 1,000,000 for the actual amount.
+
+## Usage
+
+All commands output pretty-printed JSON by default. Use `--format compact` for single-line JSON.
+
+### customers
+
+List accessible customer accounts.
+
+```bash
+google-ads-cli customers
+```
+
+### customer
+
+Get a specific customer account.
+
+```bash
+google-ads-cli customer 1234567890
+```
+
+### account-hierarchy
+
+List manager account hierarchy (sub-accounts under an MCC).
+
+```bash
+google-ads-cli account-hierarchy 1234567890
+```
+
+### campaigns
+
+List campaigns for a customer account.
+
+```bash
+google-ads-cli campaigns 1234567890
+google-ads-cli campaigns 1234567890 --status ENABLED
+```
+
+Options:
+- `--status <status>`: filter by status (ENABLED, PAUSED, REMOVED)
+- `--limit <n>`: max results (default 100)
+
+### campaign
+
+Get a specific campaign.
+
+```bash
+google-ads-cli campaign 1234567890 98765
+```
+
+### campaign-budgets
+
+List campaign budgets.
+
+```bash
+google-ads-cli campaign-budgets 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 100)
+
+### ad-groups
+
+List ad groups.
+
+```bash
+google-ads-cli ad-groups 1234567890
+google-ads-cli ad-groups 1234567890 --campaign 98765
+```
+
+Options:
+- `--campaign <id>`: filter by campaign ID
+- `--status <status>`: filter by status (ENABLED, PAUSED, REMOVED)
+- `--limit <n>`: max results (default 100)
+
+### ad-group
+
+Get a specific ad group.
+
+```bash
+google-ads-cli ad-group 1234567890 11111
+```
+
+### ads
+
+List ads.
+
+```bash
+google-ads-cli ads 1234567890
+google-ads-cli ads 1234567890 --campaign 98765 --ad-group 11111
+```
+
+Options:
+- `--campaign <id>`: filter by campaign ID
+- `--ad-group <id>`: filter by ad group ID
+- `--status <status>`: filter by status (ENABLED, PAUSED, REMOVED)
+- `--limit <n>`: max results (default 100)
+
+### ad
+
+Get a specific ad.
+
+```bash
+google-ads-cli ad 1234567890 11111 22222
+```
+
+### campaign-stats
+
+Get campaign performance stats.
+
+```bash
+google-ads-cli campaign-stats 1234567890 --start 2026-01-01 --end 2026-01-31
+google-ads-cli campaign-stats 1234567890 --start 2026-01-01 --end 2026-01-31 --campaign 98765 --segments device
+```
+
+Options:
+- `--start <date>`: start date (YYYY-MM-DD) **required**
+- `--end <date>`: end date (YYYY-MM-DD) **required**
+- `--campaign <id>`: filter by campaign ID
+- `--segments <segs>`: additional segments (comma-separated, e.g. device, ad_network_type, day_of_week)
+- `--limit <n>`: max results (default 1000)
+
+Default metrics: impressions, clicks, cost_micros, conversions, conversions_value, ctr, average_cpc, average_cpm, interactions, all_conversions
+
+### ad-group-stats
+
+Get ad group performance stats.
+
+```bash
+google-ads-cli ad-group-stats 1234567890 --start 2026-01-01 --end 2026-01-31
+```
+
+Options:
+- `--start <date>`: start date (YYYY-MM-DD) **required**
+- `--end <date>`: end date (YYYY-MM-DD) **required**
+- `--campaign <id>`: filter by campaign ID
+- `--ad-group <id>`: filter by ad group ID
+- `--limit <n>`: max results (default 1000)
+
+### ad-stats
+
+Get ad-level performance stats.
+
+```bash
+google-ads-cli ad-stats 1234567890 --start 2026-01-01 --end 2026-01-31
+```
+
+Options: same as `ad-group-stats`.
+
+### keyword-stats
+
+Get keyword-level performance stats (sorted by impressions desc).
+
+```bash
+google-ads-cli keyword-stats 1234567890 --start 2026-01-01 --end 2026-01-31
+```
+
+Options: same as `ad-group-stats`.
+
+### keywords
+
+List keywords (ad group criteria).
+
+```bash
+google-ads-cli keywords 1234567890
+google-ads-cli keywords 1234567890 --campaign 98765 --status ENABLED
+```
+
+Options:
+- `--campaign <id>`: filter by campaign ID
+- `--ad-group <id>`: filter by ad group ID
+- `--status <status>`: filter by status (ENABLED, PAUSED, REMOVED)
+- `--limit <n>`: max results (default 100)
+
+### audiences
+
+List audience segments.
+
+```bash
+google-ads-cli audiences 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 100)
+
+### user-lists
+
+List remarketing/user lists.
+
+```bash
+google-ads-cli user-lists 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 100)
+
+### negative-keywords
+
+List shared negative keyword lists.
+
+```bash
+google-ads-cli negative-keywords 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 100)
+
+### assets
+
+List assets (images, videos, text, sitelinks, etc.).
+
+```bash
+google-ads-cli assets 1234567890
+google-ads-cli assets 1234567890 --type SITELINK
+```
+
+Options:
+- `--type <type>`: filter by type (IMAGE, MEDIA_BUNDLE, TEXT, YOUTUBE_VIDEO, LEAD_FORM, CALL, CALLOUT, SITELINK, STRUCTURED_SNIPPET)
+- `--limit <n>`: max results (default 100)
+
+### extensions
+
+List ad extensions (campaign-level asset links).
+
+```bash
+google-ads-cli extensions 1234567890
+google-ads-cli extensions 1234567890 --campaign 98765
+```
+
+Options:
+- `--campaign <id>`: filter by campaign ID
+- `--limit <n>`: max results (default 100)
+
+### conversion-actions
+
+List conversion actions.
+
+```bash
+google-ads-cli conversion-actions 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 100)
+
+### query
+
+Run a raw GAQL (Google Ads Query Language) query. This is the escape hatch for any data not covered by built-in commands.
+
+```bash
+google-ads-cli query 1234567890 "SELECT campaign.id, campaign.name, metrics.clicks FROM campaign WHERE segments.date DURING LAST_30_DAYS ORDER BY metrics.clicks DESC LIMIT 10"
+```
+
+See [GAQL reference](https://developers.google.com/google-ads/api/docs/query/overview) for syntax.
+
+### billing
+
+Get billing setup and account budget info.
+
+```bash
+google-ads-cli billing 1234567890
+```
+
+### change-status
+
+Get recent change history.
+
+```bash
+google-ads-cli change-status 1234567890
+```
+
+Options:
+- `--limit <n>`: max results (default 50)
+
+## Error output
+
+All errors are JSON to stderr:
+
+```json
+{"error": "No credentials found. Provide one of: ..."}
+```
+
+## API Reference
+
+- [Google Ads API Overview](https://developers.google.com/google-ads/api/docs/start)
+- [GAQL Reference](https://developers.google.com/google-ads/api/docs/query/overview)
+- [Resource Reference](https://developers.google.com/google-ads/api/fields/v23/overview)
+
+## Attribution
+
+This is an personal fork of [google-ads-open-cli](https://github.com/Bin-Huang/google-ads-open-cli)
+by Benn Huang, used under the Apache-2.0 license. See [`NOTICE`](./NOTICE) for the
+list of modifications. The original copyright and license are retained in [`LICENSE`](./LICENSE).
+
+## License
+
+Apache-2.0

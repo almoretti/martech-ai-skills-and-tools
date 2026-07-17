@@ -1,0 +1,19 @@
+google-ads-cli (personal fork)
+
+This product is a derivative work of:
+
+    google-ads-open-cli
+    Copyright (c) Benn Huang <tohuangbin@gmail.com>
+    https://github.com/Bin-Huang/google-ads-open-cli
+    Licensed under the Apache License, Version 2.0.
+
+Modifications made by Alessandro Moretti:
+
+  - Renamed package, binary, and local credentials directory from
+    "google-ads-open-cli" to "google-ads-cli".
+  - Updated repository, homepage, bugs, and author metadata to the maintainer.
+  - Replaced the upstream "Related" project list with this attribution.
+  - Detached from upstream git history (maintained as an internal fork).
+
+The original Apache-2.0 license text is retained in the LICENSE file and
+applies to this derivative work.

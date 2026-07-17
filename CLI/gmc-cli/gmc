@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Dev wrapper: runs the CLI from this checkout's venv. Symlink-safe.
+# End users should install via `pipx install gmc-cli` instead.
+SRC="${BASH_SOURCE[0]}"
+while [ -L "$SRC" ]; do SRC="$(readlink "$SRC")"; done
+DIR="$(cd "$(dirname "$SRC")" && pwd)"
+exec "$DIR/.venv/bin/python" -m gmc_cli "$@"

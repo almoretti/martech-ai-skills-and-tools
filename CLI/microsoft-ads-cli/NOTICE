@@ -1,0 +1,17 @@
+microsoft-ads-cli (personal fork)
+
+This is an personal rebuild of microsoft-ads-cli
+(https://github.com/Bin-Huang/microsoft-ads-cli) by Benn Huang,
+used under the Apache-2.0 license.
+
+Modifications by Alessandro Moretti (2026):
+- Rebuilt on the google-ads-cli command structure for 1:1 functional parity
+- Added "auth login" browser OAuth2 flow with automatic token refresh
+- Added synchronous stats commands (campaign/ad-group/ad/keyword) that
+  submit, poll, download, and parse Bing Reporting API reports to JSON
+- Added account-hierarchy, ad-group/ad detail, shared negative keyword
+  lists and list items, ad extension library and associations,
+  conversion goals by IDs, and a read-only raw "api" escape hatch
+- Restructured command signatures to account-id-first positionals
+
+The original copyright and license are retained in LICENSE.

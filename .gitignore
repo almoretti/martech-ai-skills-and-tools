@@ -1,0 +1,27 @@
+# deps / build
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# python
+.venv/
+venv/
+__pycache__/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# secrets & credentials — NEVER commit
+.secrets/
+.env
+.env.*
+*credentials*.json
+*token*.json
+*.pem
+*.key
+
+# os / editor
+.DS_Store
+*.log
