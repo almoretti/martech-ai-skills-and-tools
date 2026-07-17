@@ -65,3 +65,8 @@ Upstream licenses are retained in each tool's `LICENSE`/`NOTICE`.
 - Keep everything **generic**: no employer accounts, IDs, tokens, or branding. Credentials stay at runtime.
 - When adding a tool that derives from OSS, add its attribution to the tool's `NOTICE` **and** the list above.
 - New skills go in `Skills/<name>/`; new CLIs go in `CLI/<name>/`.
+- The repo is a **Claude Code plugin marketplace**: `.claude-plugin/marketplace.json` is *generated*
+  from every `SKILL.md` present. After adding/renaming/removing a skill, run
+  `node scripts/build-marketplace.mjs` and commit — the `marketplace-in-sync` GitHub Action fails if
+  it drifts. Install flow: `/plugin marketplace add almoretti/martech-ai-skills-and-tools` →
+  `/plugin install <skill>@martech-ai-skills-and-tools`.

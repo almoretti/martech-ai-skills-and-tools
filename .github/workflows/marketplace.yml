@@ -1,0 +1,31 @@
+name: marketplace-in-sync
+
+# Keeps .claude-plugin/marketplace.json in sync with the skills present.
+# Regenerates it and fails if the committed file is stale.
+
+on:
+  push:
+    paths:
+      - 'Skills/**'
+      - 'CLI/**/skills/**'
+      - 'scripts/build-marketplace.mjs'
+      - '.claude-plugin/marketplace.json'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Regenerate marketplace.json
+        run: node scripts/build-marketplace.mjs
+      - name: Fail if out of date
+        run: |
+          if ! git diff --exit-code .claude-plugin/marketplace.json; then
+            echo "::error::marketplace.json is stale. Run 'node scripts/build-marketplace.mjs' and commit the result."
+            exit 1
+          fi

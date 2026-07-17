@@ -6,6 +6,24 @@ Claude skills and read-only command-line clients for the martech / adtech stack.
 Everything here is generic: no employer-specific accounts, IDs, secrets, or branding. Credentials are
 always supplied at runtime (environment variables or local credential files) and are never committed.
 
+## Install (Claude Code)
+
+This repo doubles as a **Claude Code plugin marketplace**. Add it once, then install any skill:
+
+```
+/plugin marketplace add almoretti/martech-ai-skills-and-tools
+/plugin install martech-teardown@martech-ai-skills-and-tools
+```
+
+Swap the name to install the others: `google-ads-cli`, `microsoft-ads-cli`.
+
+> The CLIs still need their runtime dependencies + credentials installed separately — see each
+> tool's own README under `CLI/`.
+
+_Maintainers:_ the marketplace manifest (`.claude-plugin/marketplace.json`) is generated from the
+skills present. After adding, renaming, or removing a skill, run `node scripts/build-marketplace.mjs`
+and commit the result — CI (`marketplace-in-sync`) fails if it drifts.
+
 ## Contents
 
 ### `Skills/` — Claude skills

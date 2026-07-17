@@ -1,0 +1,37 @@
+{
+  "name": "martech-ai-skills-and-tools",
+  "owner": {
+    "name": "Alessandro Moretti",
+    "url": "https://github.com/almoretti"
+  },
+  "metadata": {
+    "description": "Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "google-ads-cli",
+      "source": "./",
+      "skills": [
+        "./CLI/google-ads-cli/skills/google-ads-cli"
+      ],
+      "description": "Google Ads data analysis and reporting via google-ads-cli. Use when the user wants to check Google Ads performance, pull campaign/ad group/keyword stats, explore account structure, audit conversions, or run custom GAQL queries. Triggers: \"Google Ads\", \"ad performance\", \"campaign stats\", \"GAQL\", \"ad spend\", \"keyword report\", \"search terms\", \"conversion tracking\", \"impression share\", \"ad account\"."
+    },
+    {
+      "name": "martech-teardown",
+      "source": "./",
+      "skills": [
+        "./Skills/martech-teardown"
+      ],
+      "description": "Reverse-engineer any company's marketing-technology stack from public signals and produce a structured teardown report — what tools they run across every martech space (CMS, analytics, CDP, CRM, ads/pixels, consent, email, enrichment, affiliate, payments) and how their tracking, identity, and ad-measurement actually work. Use this WHENEVER the user names a brand, competitor, or website and wants to understand, audit, map, analyze, or \"tear down\" its martech / adtech / growth stack — including phrasings like \"what tools does X use\", \"analyze X's marketing stack\", \"how is X tracking users\", \"do a martech teardown of X\", \"what CMS/CDP/ analytics does X run\", \"reverse engineer X's tracking\", or \"compare our stack to X\". Trigger even if the user only gives a domain and says \"audit this\". Personal skill; keep every report generic and vendor-neutral unless the user supplies their own org context to compare against."
+    },
+    {
+      "name": "microsoft-ads-cli",
+      "source": "./",
+      "skills": [
+        "./CLI/microsoft-ads-cli/skills/microsoft-ads-cli"
+      ],
+      "description": "Microsoft Ads (Bing Ads) data analysis and reporting via microsoft-ads-cli. Use when the user wants to check Microsoft/Bing ad performance, pull campaign/ad group/keyword stats, explore ad account structure, inspect audiences, audit UET conversion tracking, or retrieve performance reports. Triggers: \"Microsoft Ads\", \"Bing Ads\", \"Microsoft Advertising\", \"bing ad performance\", \"microsoft campaign stats\", \"microsoft ad spend\", \"bing keywords\", \"microsoft audiences\", \"UET tags\", \"microsoft conversion goals\", \"bing search ads\", \"microsoft shopping ads\", \"microsoft performance max\"."
+    }
+  ]
+}
