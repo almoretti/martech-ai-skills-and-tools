@@ -55,6 +55,13 @@ Some of these tools are derivative works of, or were inspired by, open-source pr
 
 Upstream licenses are retained in each tool's `LICENSE`/`NOTICE`.
 
+## Roadmap
+
+Tracked in [issues](https://github.com/almoretti/martech-ai-skills-and-tools/issues). Notably:
+automated versioned releases + CHANGELOG via [Changesets](https://github.com/changesets/changesets)
+once the skill set grows ([#1](https://github.com/almoretti/martech-ai-skills-and-tools/issues/1)) —
+for now, releases are a manual `version` bump in `package.json` (see `AGENTS.md`).
+
 ## License
 
 MIT for the original work in this repo; vendored CLIs retain their upstream licenses. See [`LICENSE`](LICENSE).
