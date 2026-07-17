@@ -1,0 +1,16 @@
+{
+  "name": "martech-ai-skills-and-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/almoretti/martech-ai-skills-and-tools"
+  },
+  "license": "MIT",
+  "author": "Alessandro Moretti",
+  "scripts": {
+    "build:marketplace": "node scripts/build-marketplace.mjs",
+    "list:skills": "bash scripts/list-skills.sh"
+  }
+}

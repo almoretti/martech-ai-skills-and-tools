@@ -8,21 +8,22 @@ always supplied at runtime (environment variables or local credential files) and
 
 ## Install (Claude Code)
 
-This repo doubles as a **Claude Code plugin marketplace**. Add it once, then install any skill:
+This repo is a **Claude Code plugin marketplace** shipping one bundled plugin (`martech-ai-skills`)
+that includes every skill here. Add the marketplace once, then install:
 
 ```
 /plugin marketplace add almoretti/martech-ai-skills-and-tools
-/plugin install martech-teardown@martech-ai-skills-and-tools
+/plugin install martech-ai-skills@martech-ai
 ```
 
-Swap the name to install the others: `google-ads-cli`, `microsoft-ads-cli`.
+That installs all skills (`martech-teardown` + the ad-CLI skills). Run `npm run list:skills` to see them.
 
 > The CLIs still need their runtime dependencies + credentials installed separately — see each
 > tool's own README under `CLI/`.
 
-_Maintainers:_ the marketplace manifest (`.claude-plugin/marketplace.json`) is generated from the
-skills present. After adding, renaming, or removing a skill, run `node scripts/build-marketplace.mjs`
-and commit the result — CI (`marketplace-in-sync`) fails if it drifts.
+_Maintainers:_ `.claude-plugin/plugin.json` and `marketplace.json` are **generated** from the skills
+present + the `version` in `package.json`. After adding/renaming a skill or bumping the version, run
+`npm run build:marketplace` and commit — CI (`marketplace-in-sync`) fails if they drift. See `AGENTS.md`.
 
 ## Contents
 

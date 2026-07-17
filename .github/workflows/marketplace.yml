@@ -21,11 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Regenerate marketplace.json
+      - name: Regenerate manifests
         run: node scripts/build-marketplace.mjs
       - name: Fail if out of date
         run: |
-          if ! git diff --exit-code .claude-plugin/marketplace.json; then
-            echo "::error::marketplace.json is stale. Run 'node scripts/build-marketplace.mjs' and commit the result."
+          if ! git diff --exit-code .claude-plugin/plugin.json .claude-plugin/marketplace.json; then
+            echo "::error::.claude-plugin manifests are stale. Run 'npm run build:marketplace' and commit the result."
             exit 1
           fi

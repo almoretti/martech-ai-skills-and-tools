@@ -1,16 +1,23 @@
 #!/usr/bin/env node
-// Regenerate .claude-plugin/marketplace.json from the skills present in the repo.
+// Regenerate BOTH Claude Code manifests from the skills present + the version in package.json:
+//   .claude-plugin/plugin.json      — the bundled plugin (name, version, keywords, skills[])
+//   .claude-plugin/marketplace.json — the single-plugin marketplace that ships it
 // A skill = any directory containing a SKILL.md, under Skills/ or CLI/*/skills/.
-// Run after adding/removing/renaming a skill:  node scripts/build-marketplace.mjs
-// CI (.github/workflows/marketplace.yml) runs this and fails if the committed file is stale.
+// Run after adding/removing/renaming a skill OR bumping the version in package.json:
+//   node scripts/build-marketplace.mjs   (npm run build:marketplace)
+// CI (.github/workflows/marketplace.yml) runs this and fails if either file is stale.
 
-import { readdirSync, readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
 
-// find every dir with a SKILL.md (skip deps)
+const MARKETPLACE_NAME = 'martech-ai';          // /plugin marketplace add almoretti/martech-ai-skills-and-tools
+const PLUGIN_NAME = 'martech-ai-skills';         // /plugin install martech-ai-skills@martech-ai
+const KEYWORDS = ['martech', 'marketing', 'competitive-intelligence', 'google-ads', 'microsoft-ads', 'google-merchant-center', 'adtech', 'skills'];
+
 function findSkillDirs(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (!e.isDirectory()) continue;
@@ -22,48 +29,42 @@ function findSkillDirs(dir, out = []) {
   return out;
 }
 
-// pull name + description out of SKILL.md YAML frontmatter (handles folded >- blocks)
-function parseFrontmatter(md) {
-  const m = md.match(/^---\n([\s\S]*?)\n---/);
-  if (!m) return {};
-  const fm = m[1].split('\n');
-  const out = {};
-  for (let i = 0; i < fm.length; i++) {
-    const line = fm[i];
-    const kv = line.match(/^([A-Za-z_-]+):\s*(.*)$/);
-    if (!kv) continue;
-    const key = kv[1];
-    let val = kv[2].trim();
-    if (val === '>-' || val === '>' || val === '|' || val === '|-' || val === '') {
-      // collect subsequent more-indented lines
-      const buf = [];
-      while (i + 1 < fm.length && /^\s+\S/.test(fm[i + 1])) { buf.push(fm[++i].trim()); }
-      val = buf.join(' ').trim();
-    }
-    if (key === 'name' || key === 'description') out[key] = val.replace(/\s+/g, ' ');
-  }
-  return out;
-}
+const skills = findSkillDirs(ROOT)
+  .map((d) => './' + relative(ROOT, d).split('\\').join('/'))
+  .sort((a, b) => a.localeCompare(b));
 
-const plugins = findSkillDirs(ROOT)
-  .map((d) => {
-    const fm = parseFrontmatter(readFileSync(join(d, 'SKILL.md'), 'utf8'));
-    const rel = './' + relative(ROOT, d).split('\\').join('/');
-    return { name: fm.name || d.split('/').pop(), source: './', skills: [rel], description: fm.description || '' };
-  })
-  .sort((a, b) => a.name.localeCompare(b.name));
+// .claude-plugin/plugin.json — the plugin itself; `version` drives update notifications for installed users
+const pluginJson = {
+  name: PLUGIN_NAME,
+  version: pkg.version,
+  description: pkg.description,
+  author: { name: 'Alessandro Moretti', url: 'https://github.com/almoretti' },
+  repository: pkg.repository.url,
+  license: pkg.license,
+  keywords: KEYWORDS,
+  skills,
+};
 
-const marketplace = {
-  name: 'martech-ai-skills-and-tools',
+// .claude-plugin/marketplace.json — a single-plugin marketplace that ships the plugin above
+const marketplaceJson = {
+  name: MARKETPLACE_NAME,
   owner: { name: 'Alessandro Moretti', url: 'https://github.com/almoretti' },
-  metadata: {
-    description: 'Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.',
-    version: '0.1.0',
-  },
-  plugins,
+  description: pkg.description,
+  plugins: [
+    {
+      name: PLUGIN_NAME,
+      source: './',
+      description: pkg.description,
+      category: 'marketing',
+      keywords: KEYWORDS,
+      skills,
+    },
+  ],
 };
 
 const dir = join(ROOT, '.claude-plugin');
 if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-writeFileSync(join(dir, 'marketplace.json'), JSON.stringify(marketplace, null, 2) + '\n');
-console.log(`marketplace.json written with ${plugins.length} plugin(s): ${plugins.map((p) => p.name).join(', ')}`);
+writeFileSync(join(dir, 'plugin.json'), JSON.stringify(pluginJson, null, 2) + '\n');
+writeFileSync(join(dir, 'marketplace.json'), JSON.stringify(marketplaceJson, null, 2) + '\n');
+console.log(`v${pkg.version} — wrote plugin.json + marketplace.json with ${skills.length} skill(s):`);
+skills.forEach((s) => console.log('  ' + s));
