@@ -1,6 +1,6 @@
 # Martech AI Skills and Tools
 
-[![skills.sh](https://img.shields.io/badge/skills.sh-martech--teardown-000000?logo=vercel&logoColor=white)](https://skills.sh/s/martech-teardown)
+[![skills.sh](https://img.shields.io/badge/skills.sh-view%20skills-000000?logo=vercel&logoColor=white)](https://www.skills.sh/almoretti/martech-ai-skills-and-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A personal, vendor-neutral collection of **marketing-technology tooling for AI agents** (and humans) —
