@@ -22,21 +22,19 @@ with the standalone skills under [`Skills/`](Skills). Add the marketplace once, 
 > (and its skill) per its own README under `CLI/`.
 
 **Or via the `skills` CLI** ([skills.sh](https://skills.sh)) — cross-agent (Claude Code, **Codex**,
-Cursor, GitHub Copilot, Gemini, OpenCode + 60 more). No registration; it resolves the GitHub repo
-directly. Point it at the **`Skills/` subtree** so the selector only offers the marketplace skills
-(not the CLI-bundled ones):
+Cursor, GitHub Copilot, Gemini, OpenCode + 60 more), no registration. It reads this repo's
+`.claude-plugin` manifest, so it exposes **exactly the marketplace skills** — the CLI-bundled skills
+under `CLI/` are not listed:
 
 ```
-npx skills add https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/Skills
+npx skills@latest add almoretti/martech-ai-skills-and-tools
 ```
 
 The CLI auto-detects your installed agents; target one explicitly with `-a`, e.g. Codex → `~/.codex/skills/`:
 
 ```
-npx skills add https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/Skills -a codex
+npx skills@latest add almoretti/martech-ai-skills-and-tools -a codex
 ```
-
-(`--skill martech-teardown` picks non-interactively; `--list` just shows what's there.)
 
 _Maintainers:_ `.claude-plugin/plugin.json` and `marketplace.json` are **generated** from the skills
 present + the `version` in `package.json`. After adding/renaming a skill or bumping the version, run
