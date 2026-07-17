@@ -1,6 +1,6 @@
 # microsoft-ads-cli
 
-Microsoft Advertising (Bing Ads) CLI & Skills for AI agents (and humans). Pull campaign, ad group, ad, and keyword stats, navigate account hierarchies, audit conversion tracking (UET), and more — 1:1 functional parity with its sibling [google-ads-cli](https://github.com/almoretti/google-ads-cli).
+Microsoft Advertising (Bing Ads) CLI & Skills for AI agents (and humans). Pull campaign, ad group, ad, and keyword stats, navigate account hierarchies, audit conversion tracking (UET), and more — 1:1 functional parity with its sibling [google-ads-cli](../google-ads-cli).
 
 **Works with:** OpenClaw, Claude Code, Cursor, Codex, and any agent that can run shell commands.
 
@@ -8,7 +8,7 @@ Microsoft Advertising (Bing Ads) CLI & Skills for AI agents (and humans). Pull c
 
 Tell your AI agent (e.g. OpenClaw):
 
-> Install this CLI and skills from https://github.com/almoretti/microsoft-ads-cli
+> Install this CLI and skills from https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/microsoft-ads-cli
 
 Or install manually:
 
@@ -396,7 +396,7 @@ list of modifications. The original copyright and license are retained in [`LICE
 
 ## Related
 
-- [google-ads-cli](https://github.com/almoretti/google-ads-cli) -- the sibling Google Ads CLI this one mirrors
+- [google-ads-cli](../google-ads-cli) -- the sibling Google Ads CLI this one mirrors
 
 ## License
 

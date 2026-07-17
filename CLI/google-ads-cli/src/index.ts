@@ -23,7 +23,7 @@ program
   .option("--credentials <path>", "Path to credentials JSON file")
   .addHelpText(
     "after",
-    "\nDocs: https://github.com/almoretti/google-ads-cli"
+    "\nDocs: https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/google-ads-cli"
   );
 
 program.configureOutput({

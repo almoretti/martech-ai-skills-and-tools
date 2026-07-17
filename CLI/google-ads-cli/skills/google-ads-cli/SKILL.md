@@ -352,7 +352,7 @@ Use the `query` command with GAQL. Common scenarios:
 
 ## API documentation references
 
-- [google-ads-cli documentation](https://github.com/almoretti/google-ads-cli)
+- [google-ads-cli documentation](https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/google-ads-cli)
 - [Google Ads API overview](https://developers.google.com/google-ads/api/docs/start)
 - [GAQL reference](https://developers.google.com/google-ads/api/docs/query/overview)
 - [GAQL grammar](https://developers.google.com/google-ads/api/docs/query/grammar)

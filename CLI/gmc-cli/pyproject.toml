@@ -41,10 +41,10 @@ dependencies = [
 gmc = "gmc_cli.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/almoretti/gmc-cli"
-Repository = "https://github.com/almoretti/gmc-cli"
-Issues = "https://github.com/almoretti/gmc-cli/issues"
-Changelog = "https://github.com/almoretti/gmc-cli/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/gmc-cli"
+Repository = "https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/gmc-cli"
+Issues = "https://github.com/almoretti/martech-ai-skills-and-tools/issues"
+Changelog = "https://github.com/almoretti/martech-ai-skills-and-tools/blob/main/CLI/gmc-cli/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gmc_cli"]

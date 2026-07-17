@@ -1,6 +1,5 @@
 # gmc-cli — Google Merchant Center CLI
 
-[![CI](https://github.com/almoretti/gmc-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/almoretti/gmc-cli/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/gmc-cli)](https://pypi.org/project/gmc-cli/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -43,7 +42,7 @@ pipx install gmc-cli        # recommended (isolated)
 From source:
 
 ```bash
-git clone https://github.com/almoretti/gmc-cli && cd gmc-cli
+git clone https://github.com/almoretti/martech-ai-skills-and-tools && cd martech-ai-skills-and-tools/CLI/gmc-cli
 ./setup.sh                  # local venv + editable install; run via ./gmc
 ```
 

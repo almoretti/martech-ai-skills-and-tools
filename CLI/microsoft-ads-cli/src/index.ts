@@ -23,7 +23,7 @@ program
   .option("--credentials <path>", "Path to credentials JSON file")
   .addHelpText(
     "after",
-    "\nDocs: https://github.com/almoretti/microsoft-ads-cli"
+    "\nDocs: https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/microsoft-ads-cli"
   );
 
 program.configureOutput({

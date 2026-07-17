@@ -179,7 +179,7 @@ Useful report types: `SearchQueryPerformanceReportRequest` (search terms), `AgeG
 
 ## Related docs
 
-- [microsoft-ads-cli documentation](https://github.com/almoretti/microsoft-ads-cli)
+- [microsoft-ads-cli documentation](https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/CLI/microsoft-ads-cli)
 - [Bing Ads API Getting Started](https://learn.microsoft.com/en-us/advertising/guides/get-started)
 - [Authentication with OAuth](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth)
 - [Campaign Management Service](https://learn.microsoft.com/en-us/advertising/campaign-management-service/campaign-management-service-reference)
