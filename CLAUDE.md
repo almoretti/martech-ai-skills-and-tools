@@ -3,7 +3,7 @@
 A personal, vendor-neutral collection of marketing-technology tooling for AI agents (and humans).
 Two kinds of tool live here, one per subfolder:
 
-- **`Skills/`** — Claude skills (self-contained instruction packages: `SKILL.md` + bundled scripts/references/assets).
+- **`skills/`** — Claude skills (self-contained instruction packages: `SKILL.md` + bundled scripts/references/assets).
 - **`CLI/`** — standalone command-line tools (read-only ad-platform / merchant clients), each installable on its own.
 
 Everything here is generic and personal — no employer-specific accounts, secrets, or branding.
@@ -11,7 +11,7 @@ Credentials are always supplied at runtime (env vars / local credential files), 
 
 ---
 
-## Skills/
+## skills/
 
 ### `martech-teardown`
 Reverse-engineer any company's marketing-technology stack from public signals and produce a
@@ -25,7 +25,7 @@ and ad-measurement work.
   → evidence-tagged report (`references/report-structure.md`, neutral HTML template in `assets/`).
 - **Principle:** discovery over checklist — capture everything and classify; never read "0 hits" as
   "no tracking"; tag every claim Confirmed / Inferred / Assumed with its evidence.
-- **Entry point:** `Skills/martech-teardown/SKILL.md`.
+- **Entry point:** `skills/martech-teardown/SKILL.md`.
 
 ---
 
@@ -64,7 +64,7 @@ Upstream licenses are retained in each tool's `LICENSE`/`NOTICE`.
 - Each subfolder is its own self-contained tool — read its `SKILL.md` / `README.md` before changing it.
 - Keep everything **generic**: no employer accounts, IDs, tokens, or branding. Credentials stay at runtime.
 - When adding a tool that derives from OSS, add its attribution to the tool's `NOTICE` **and** the list above.
-- New skills go in `Skills/<name>/`; new CLIs go in `CLI/<name>/`.
+- New skills go in `skills/<name>/`; new CLIs go in `CLI/<name>/`.
 - The repo is a **Claude Code plugin marketplace**: `.claude-plugin/marketplace.json` is *generated*
   from every `SKILL.md` present. After adding/renaming/removing a skill, run
   `node scripts/build-marketplace.mjs` and commit — the `marketplace-in-sync` GitHub Action fails if

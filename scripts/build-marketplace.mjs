@@ -2,7 +2,7 @@
 // Regenerate BOTH Claude Code manifests from the skills present + the version in package.json:
 //   .claude-plugin/plugin.json      — the bundled plugin (name, version, keywords, skills[])
 //   .claude-plugin/marketplace.json — the single-plugin marketplace that ships it
-// A skill = any directory containing a SKILL.md, under Skills/ or CLI/*/skills/.
+// A skill = any directory containing a SKILL.md, under skills/ or CLI/*/skills/.
 // Run after adding/removing/renaming a skill OR bumping the version in package.json:
 //   node scripts/build-marketplace.mjs   (npm run build:marketplace)
 // CI (.github/workflows/marketplace.yml) runs this and fails if either file is stale.
@@ -29,10 +29,10 @@ function findSkillDirs(dir, out = []) {
   return out;
 }
 
-// Only skills under Skills/ are shipped by the marketplace. CLI skills live with their CLI
+// Only skills under skills/ are shipped by the marketplace. CLI skills live with their CLI
 // under CLI/<name>/skills/ and are installed alongside the CLI — they are NOT bundled here,
 // because they need the CLI binary + credentials to do anything.
-const SKILLS_DIR = join(ROOT, 'Skills');
+const SKILLS_DIR = join(ROOT, 'skills');
 const skills = (existsSync(SKILLS_DIR) ? findSkillDirs(SKILLS_DIR) : [])
   .map((d) => './' + relative(ROOT, d).split('\\').join('/'))
   .sort((a, b) => a.localeCompare(b));

@@ -6,7 +6,7 @@ name: marketplace-in-sync
 on:
   push:
     paths:
-      - 'Skills/**'
+      - 'skills/**'
       - 'package.json'
       - 'scripts/build-marketplace.mjs'
       - '.claude-plugin/**'

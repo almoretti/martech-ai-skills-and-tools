@@ -12,7 +12,7 @@ always supplied at runtime (environment variables or local credential files) and
 ## Install (Claude Code)
 
 This repo is a **Claude Code plugin marketplace** shipping one bundled plugin (`martech-ai-skills`)
-with the standalone skills under [`Skills/`](Skills). Add the marketplace once, then install:
+with the standalone skills under [`skills/`](skills). Add the marketplace once, then install:
 
 ```
 /plugin marketplace add almoretti/martech-ai-skills-and-tools
@@ -45,10 +45,10 @@ present + the `version` in `package.json`. After adding/renaming a skill or bump
 
 ## Contents
 
-### `Skills/` — Claude skills
+### `skills/` — Claude skills
 | Skill | What it does |
 |---|---|
-| [`martech-teardown`](Skills/martech-teardown) | Reverse-engineer any company's martech stack from public signals and produce a structured, evidence-tagged teardown report — CMS, analytics, CDP, CRM, ads/pixels + a per-platform CAPI matrix, consent, email, enrichment, affiliate, payments — plus how their tracking, identity and ad-measurement work. Static scan + discovery-first browser audit + multi-surface sweep + public enrichment. |
+| [`martech-teardown`](skills/martech-teardown) | Reverse-engineer any company's martech stack from public signals and produce a structured, evidence-tagged teardown report — CMS, analytics, CDP, CRM, ads/pixels + a per-platform CAPI matrix, consent, email, enrichment, affiliate, payments — plus how their tracking, identity and ad-measurement work. Static scan + discovery-first browser audit + multi-surface sweep + public enrichment. |
 
 ### `CLI/` — command-line tools
 Read-only clients that pull platform data as JSON, built for AI agents; each ships a bundled skill.

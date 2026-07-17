@@ -22,7 +22,7 @@
         "skills"
       ],
       "skills": [
-        "./Skills/martech-teardown"
+        "./skills/martech-teardown"
       ]
     }
   ]
