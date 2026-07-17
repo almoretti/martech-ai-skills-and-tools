@@ -22,8 +22,6 @@
         "skills"
       ],
       "skills": [
-        "./CLI/google-ads-cli/skills/google-ads-cli",
-        "./CLI/microsoft-ads-cli/skills/microsoft-ads-cli",
         "./Skills/martech-teardown"
       ]
     }

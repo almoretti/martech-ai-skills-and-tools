@@ -4,8 +4,12 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 
-echo "Skills in this marketplace:"
-find Skills CLI -name SKILL.md -not -path '*/node_modules/*' 2>/dev/null | sed 's|/SKILL.md||; s|^|  - |' | sort
+echo "Skills shipped by this marketplace (Skills/ only):"
+find Skills -name SKILL.md -not -path '*/node_modules/*' 2>/dev/null | sed 's|/SKILL.md||; s|^|  - |' | sort
+
+echo
+echo "CLI-bundled skills (installed WITH their CLI, not via this marketplace):"
+find CLI -name SKILL.md -not -path '*/node_modules/*' 2>/dev/null | sed 's|/SKILL.md||; s|^|  - |' | sort
 
 echo
 echo "Install all of them in Claude Code:"

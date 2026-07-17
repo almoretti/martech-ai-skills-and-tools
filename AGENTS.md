@@ -9,16 +9,19 @@ How this repo is organized and how to add/change a tool so everything stays cons
 - `scripts/` — `build-marketplace.mjs` (regenerates the manifests), `list-skills.sh`.
 
 ## The repo is a Claude Code plugin marketplace
-It ships **one bundled plugin**, `martech-ai-skills`, that includes every skill in the repo. Install:
+It ships **one bundled plugin**, `martech-ai-skills`, that includes **only the skills under `Skills/`**.
+CLI skills (under `CLI/<name>/skills/`) are **not** bundled — they ship with, and are installed alongside,
+their CLI, because they need the CLI binary + credentials to do anything. Install the marketplace plugin:
 ```
 /plugin marketplace add almoretti/martech-ai-skills-and-tools
 /plugin install martech-ai-skills@martech-ai
 ```
 
 ## Adding / renaming / removing a skill
-1. Put the skill under `Skills/<name>/` (or a CLI's `skills/` folder). It just needs a `SKILL.md` with `name` + `description` frontmatter.
+1. **Marketplace skill** → put it under `Skills/<name>/` with a `SKILL.md` (`name` + `description` frontmatter).
+   **CLI skill** → put it under `CLI/<name>/skills/<name>/`; it travels with the CLI and is *not* added to the marketplace.
 2. Regenerate the manifests: `npm run build:marketplace` (or `node scripts/build-marketplace.mjs`).
-   This rewrites `.claude-plugin/plugin.json` and `marketplace.json` from the skills present — never hand-edit them.
+   This scans **`Skills/` only** and rewrites `.claude-plugin/plugin.json` + `marketplace.json` — never hand-edit them.
 3. Add a row to `README.md`.
 4. Commit. CI (`marketplace-in-sync`) regenerates and **fails if either manifest is stale**.
 

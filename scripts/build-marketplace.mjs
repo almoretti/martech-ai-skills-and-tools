@@ -29,7 +29,11 @@ function findSkillDirs(dir, out = []) {
   return out;
 }
 
-const skills = findSkillDirs(ROOT)
+// Only skills under Skills/ are shipped by the marketplace. CLI skills live with their CLI
+// under CLI/<name>/skills/ and are installed alongside the CLI — they are NOT bundled here,
+// because they need the CLI binary + credentials to do anything.
+const SKILLS_DIR = join(ROOT, 'Skills');
+const skills = (existsSync(SKILLS_DIR) ? findSkillDirs(SKILLS_DIR) : [])
   .map((d) => './' + relative(ROOT, d).split('\\').join('/'))
   .sort((a, b) => a.localeCompare(b));
 

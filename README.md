@@ -9,17 +9,17 @@ always supplied at runtime (environment variables or local credential files) and
 ## Install (Claude Code)
 
 This repo is a **Claude Code plugin marketplace** shipping one bundled plugin (`martech-ai-skills`)
-that includes every skill here. Add the marketplace once, then install:
+with the standalone skills under [`Skills/`](Skills). Add the marketplace once, then install:
 
 ```
 /plugin marketplace add almoretti/martech-ai-skills-and-tools
 /plugin install martech-ai-skills@martech-ai
 ```
 
-That installs all skills (`martech-teardown` + the ad-CLI skills). Run `npm run list:skills` to see them.
-
-> The CLIs still need their runtime dependencies + credentials installed separately — see each
-> tool's own README under `CLI/`.
+> **CLI skills are not in this plugin.** Each CLI under [`CLI/`](CLI) ships its own skill
+> (`CLI/<name>/skills/`) that installs *with the CLI* — those skills need the CLI binary and
+> credentials to work, so they're intentionally not bundled into the marketplace. Install a CLI
+> (and its skill) per its own README under `CLI/`.
 
 _Maintainers:_ `.claude-plugin/plugin.json` and `marketplace.json` are **generated** from the skills
 present + the `version` in `package.json`. After adding/renaming a skill or bumping the version, run

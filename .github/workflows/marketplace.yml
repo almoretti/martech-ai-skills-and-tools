@@ -7,9 +7,9 @@ on:
   push:
     paths:
       - 'Skills/**'
-      - 'CLI/**/skills/**'
+      - 'package.json'
       - 'scripts/build-marketplace.mjs'
-      - '.claude-plugin/marketplace.json'
+      - '.claude-plugin/**'
   pull_request:
   workflow_dispatch:
 
