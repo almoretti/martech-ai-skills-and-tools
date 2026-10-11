@@ -1,6 +1,6 @@
 {
   "name": "martech-ai-skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
   "author": {
     "name": "Alessandro Moretti",

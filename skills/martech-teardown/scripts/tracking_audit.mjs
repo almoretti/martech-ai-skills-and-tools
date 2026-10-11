@@ -3,8 +3,8 @@
 // decodes the Meta /tr/ payload so you can see match-rate identifiers (_fbp/_fbc)
 // and any CAPI event_id dedup keys.
 //
-// Requires: playwright (run from a dir that has it, or `npm i playwright` first;
-//   the SKILL tells the agent how to guarantee this).
+// Requires: playwright. Resolved from $PLAYWRIGHT_DIR, then the cwd, then this script's
+//   folder — so it runs straight from the skill cache without copying it into a project.
 //
 // Usage:
 //   node tracking_audit.mjs <domain> [out.json] [cookies.json]
@@ -17,9 +17,19 @@
 // Simulates an ad click by appending utm + fbclid + gclid so click-ID handling
 // is observable. Purely observational: it does not submit forms or mutate state.
 
-import { chromium } from 'playwright';
 import fs from 'node:fs';
 import zlib from 'node:zlib';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+function loadPlaywright() {
+  const dirs = [process.env.PLAYWRIGHT_DIR, process.cwd(), path.dirname(fileURLToPath(import.meta.url))].filter(Boolean);
+  for (const d of dirs) { try { return createRequire(path.join(d, 'package.json'))('playwright'); } catch {} }
+  console.error('playwright not found. Set PLAYWRIGHT_DIR=<folder whose node_modules has playwright>, or run from one.');
+  process.exit(2);
+}
+const { chromium } = loadPlaywright();
 
 const RAW = (process.argv[2] || '').replace(/^https?:\/\//, '');
 if (!RAW) { console.error('usage: node tracking_audit.mjs <domain[/path] | sub.domain> [out.json] [cookies.json]'); process.exit(1); }
@@ -85,11 +95,15 @@ function parseBody(buf, headers, url) {
   } catch (e) { return `<unparsed:${e.message}>`; }
 }
 
-const browser = await chromium.launch({ headless: true });
+// Hide the automation tells. Some bundles (seen on lovable.dev) gate their whole analytics
+// stack on navigator.webdriver / a HeadlessChrome UA, so a plain headless run reports a false
+// "no tracking". Flag + init script + a real-browser UA keep the capture honest.
+const browser = await chromium.launch({ headless: true, args: ['--disable-blink-features=AutomationControlled'] });
 const ctx = await browser.newContext({
   userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
   locale: 'en-US',
 });
+await ctx.addInitScript(() => { Object.defineProperty(navigator, 'webdriver', { get: () => undefined }); });
 let authed = false;
 if (COOKIE_FILE && fs.existsSync(COOKIE_FILE)) {
   const raw = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf8'));
