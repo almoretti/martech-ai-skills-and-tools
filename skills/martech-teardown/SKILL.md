@@ -130,9 +130,9 @@ Ensure Playwright is available, then run it (it simulates an ad-click landing wi
 `fbclid`/`gclid`, accepts a consent banner, and records everything):
 
 ```bash
-# guarantee playwright: run from a dir that already has it, or:
+# playwright is resolved from $PLAYWRIGHT_DIR, then the cwd. None anywhere?
 #   mkdir -p /tmp/mt && cd /tmp/mt && npm i playwright >/dev/null 2>&1 && npx playwright install chromium >/dev/null 2>&1
-node scripts/tracking_audit.mjs <domain> <out_dir>/audit-anon.json
+PLAYWRIGHT_DIR=<folder with node_modules/playwright> node scripts/tracking_audit.mjs <domain> <out_dir>/audit-anon.json
 ```
 
 For the **anonymous vs authenticated identity diff** — *optional*, and only ever on the
@@ -169,6 +169,11 @@ over the raw capture: walk `thirdPartyHosts` and `firstPartyProxyCandidates`, lo
 `surveys.js`/`recorder.js` script), and inspect cookies. Identify what each host/script/cookie
 belongs to — including tools not in `references/signatures.md` — and add anything new you learn
 back into that file. The regex exists to save time on the obvious cases, not to bound the search.
+
+**Keep extraction output small.** When you grep or decode downloaded bundles and captures,
+write the full output to a file in `<out_dir>` and print a capped summary (counts, the first N
+matches). A wide-context grep across a hundred minified chunks times out, and a 25 KB tool
+result crowds out the reasoning it was meant to feed.
 
 Then parse for: custom dataLayer events, first-party proxying, identity minting, consent gating,
 and the `_fbp`/`_fbc`/`event_id` match-rate mechanics. `references/signatures.md` explains the

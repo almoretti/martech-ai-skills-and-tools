@@ -1,0 +1,23 @@
+name: scripts-check
+
+# Syntax-checks every bundled skill script so a broken edit never ships to the marketplace.
+
+on:
+  push:
+    paths:
+      - 'skills/**/scripts/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: node --check
+        run: for f in skills/*/scripts/*.mjs; do node --check "$f"; done
+      - name: shellcheck
+        run: shellcheck -S warning skills/*/scripts/*.sh

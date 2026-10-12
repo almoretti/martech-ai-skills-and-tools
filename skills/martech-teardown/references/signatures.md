@@ -164,16 +164,23 @@ Modern sites proxy GTM+GA server-side for ITP/adblock resistance — the client-
 - **Demandbase** `tag.demandbase.com`/`company-target.com`, `Demandbase_Loaded`; **ZoomInfo** `_zitok`/`ws.zoominfo.com`/`js.zi-scripts.com`; **6sense** `6suuid`/`b.6sc.co`/`epsilon.6sense.com`; **Qualified** `__q_state`/`assets.qualified.com`; **G2** `tracking.g2crowd.com`; plus Vector / Influ2 / CaliberMind. (See the reveal caveats above — company-level, ~15–40% match.)
 
 ### Bot-mitigation cookies — recognise so you DON'T mis-tag them as martech
-`__cf_bm`/`cf_clearance`/`_cfuvid` (Cloudflare) · `ak_bmsc`/`bm_sv`/`go-mpulse.net` (Akamai Bot Manager/mPulse) · `datadome` (DataDome) · `_px3`/`_pxvid`/`pxcts` (PerimeterX/HUMAN) · `aws-waf-token` (AWS WAF). These are also the fingerprints for the **bot-wall** the scan now flags.
+`__cf_bm`/`cf_clearance`/`_cfuvid` (Cloudflare) · `__cuid` + `cdn.castle.io` + `pk_…` key (Castle, account-fraud, not martech) · `ak_bmsc`/`bm_sv`/`go-mpulse.net` (Akamai Bot Manager/mPulse) · `datadome` (DataDome) · `_px3`/`_pxvid`/`pxcts` (PerimeterX/HUMAN) · `aws-waf-token` (AWS WAF). These are also the fingerprints for the **bot-wall** the scan now flags.
 
 ### Consent (beyond Cookiebot/OneTrust/Usercentrics)
+- **Consent-signal fan-out from a first-party CMP** — the CMP itself is invisible but its downstream calls are not: Google Consent Mode v2 (`gtag('consent','update',…)`, `wait_for_update`), Bing `uetq.push('consent',…)`, HubSpot `_hsp.push(['setHubSpotConsent',…])`. Seen on lovable.dev: cookie `lovable_consent_v1` + POST `api.<domain>/consent/decisions?visitor_id=`, with click-ids cookied *before* the decision under a "first_party_attribution" category.
 - **Transcend** `airgap.js`/`transcend-cdn.com`; OneTrust IAB-TCF variants `eupubconsent-v2`/`OptanonConsent`; **bespoke/first-party CMPs** invisible to SaaS-CMP detection — e.g. NYT **PURR** (`nyt-purr`), Booking `pcm_consent`, homegrown `twCookieConsent`. Absence of a SaaS CMP ≠ no consent; look for a first-party one.
 
+### CDP as the sole tag loader: RudderStack (self-hosted)
+No GTM at all; a self-hosted RudderStack JS SDK loads every pixel in **device mode**. Tells: host `rs.<domain>` / `*.dataplane.rudderstack.com`, cookies `rl_anonymous_id` / `rl_user_id` / `rl_group_id` / `rl_page_init_referrer`, paths `/sourceConfig`, `/v1/batch`, `/transform`, `/<ver>/modern/js-integrations/<Vendor>.js`. The **sourceConfig is public**: `GET <cdn>/sourceConfig?p=npm&v=<ver>&writeKey=<key>` returns every destination with its account/pixel IDs and enabled flag — the GTM-container equivalent, fetch it.
+
+### Headless gates (a false "no tracking")
+Bundles that check `navigator.webdriver` or a `HeadlessChrome` UA and skip analytics init (lovable.dev). The audit script hides both by default; if a capture still shows zero analytics on a site that plainly has it, grep the downloaded chunks for `webdriver` before concluding.
+
 ### Attribution / MMP (mobile + partner)
-AppsFlyer `AF_SYNC`/`afUserId`/`onelink.me` · Branch `branch_key`/`app.link` · Singular · Impact.com `IR_*`/`*.sjv.io`/`ojrq.net` · Tapad `TapAd_DID` · TVSquared/Snowplow `_tq_id`/`_sp_id` · comScore `scorecardresearch.com` · Magellan AI `mgln.ai` (podcast) · Spotify Ads `pixels.spotify.com`/AdsWizz.
+AppsFlyer `AF_SYNC`/`afUserId`/`onelink.me` · Branch `branch_key`/`app.link` · Singular · Impact.com `IR_*`/`*.sjv.io`/`ojrq.net` · Tapad `TapAd_DID` · TVSquared/Snowplow `_tq_id`/`_sp_id` · comScore `scorecardresearch.com` · Magellan AI `mgln.ai` (podcast) · iSpot.tv `TC-…` pixel (TV attribution) · beehiiv pixel (newsletter attribution) · Spotify Ads `pixels.spotify.com`/AdsWizz.
 
 ### Observability & video (repeatedly missed; not marketing but worth noting)
-Datadog RUM `_dd_s`/`browser-intake-datadoghq.*` · New Relic `bam.nr-data.net` · Sentry `*.ingest.sentry.io` · Mux `litix.io`/`mux.com` · Statsig · publisher SSPs `media.net`/`casalemedia`/`rubiconproject`/APS/Prebid (NYT).
+FullStory `edge.fullstory.com`/`fs.js`, cookie `_fs_uid`, global `FS` · Datadog RUM `_dd_s`/`browser-intake-datadoghq.*` · New Relic `bam.nr-data.net` · Sentry `*.ingest.sentry.io` · Mux `litix.io`/`mux.com` · Statsig · publisher SSPs `media.net`/`casalemedia`/`rubiconproject`/APS/Prebid (NYT).
 
 ### Self-hosted first-party telemetry (DON'T mistake for proxied third-party analytics)
 Some companies' entire analytics spine is in-house first-party — surfaces only in `firstPartyProxyCandidates`: GitHub `collector.github.com/_/collect`, Netflix **Ichnaea** (`ichnaea-web`), NYT `jkidd`/`a.et`/`eg`, Booking `c360.booking.com`, **Stripe `r.stripe.com`/`q.stripe.com`** (product/fraud telemetry — the classic trap). Confirm it's the company's own domain doing its own thing before labelling it a vendor.

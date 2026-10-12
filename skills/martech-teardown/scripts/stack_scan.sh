@@ -16,6 +16,19 @@ UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, l
 mkdir -p "$OUT"
 echo "==> scanning $DOMAIN -> $OUT"
 
+# DNS lookup: dig where present; Git Bash on Windows has no dig, so fall back to PowerShell
+# Resolve-DnsName, then nslookup. Usage: dns TYPE NAME  -> one record per line (like dig +short).
+dns(){
+  local t="$1" n="$2"
+  if command -v dig >/dev/null 2>&1; then
+    dig +short "$t" "$n" 2>/dev/null
+  elif command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -Command "Resolve-DnsName -Name '$n' -Type $t -ErrorAction SilentlyContinue | ForEach-Object { if (\$_.Type -eq 'TXT') { \$_.Strings -join '' } elseif (\$_.Type -eq 'CNAME') { \$_.NameHost } elseif (\$_.Type -eq 'MX') { \"\$(\$_.Preference) \$(\$_.NameExchange)\" } elseif (\$_.IPAddress) { \$_.IPAddress } }" 2>/dev/null | tr -d '\r'
+  else
+    nslookup -type="$t" "$n" 2>/dev/null | grep -iE 'text =|canonical name =|mail exchanger =' | sed -E 's/^[^=]*= *//; s/"//g'
+  fi
+}
+
 # ---------- 1. homepage ----------
 curl -sL --max-time 40 -A "$UA" "https://$DOMAIN/" -o "$OUT/home.html"
 HB=$(wc -c < "$OUT/home.html" 2>/dev/null || echo 0)
@@ -82,17 +95,17 @@ echo "-- headers --"; cat "$OUT/headers.txt"
 
 # ---------- 6. DNS: SPF / DKIM / verification (email + SaaS vendors) ----------
 {
-  echo "## TXT root (verifications + SPF):"; dig +short TXT "$DOMAIN"
-  echo; echo "## DMARC:"; dig +short TXT "_dmarc.$DOMAIN"
+  echo "## TXT root (verifications + SPF):"; dns TXT "$DOMAIN"
+  echo; echo "## DMARC:"; dns TXT "_dmarc.$DOMAIN"
   echo; echo "## DKIM selector probes (CNAME/TXT):"
   # Guard against wildcard/catch-all _domainkey DNS, which otherwise fabricates every ESP
   # (seen on Datadog's catch-all + Netflix echoing apex SPF). Probe a random nonce first.
   NONCE="zzq7x9nonce42"
-  if [ -n "$(dig +short TXT "$NONCE._domainkey.$DOMAIN" 2>/dev/null)$(dig +short CNAME "$NONCE._domainkey.$DOMAIN" 2>/dev/null)" ]; then
+  if [ -n "$(dns TXT "$NONCE._domainkey.$DOMAIN" 2>/dev/null)$(dns CNAME "$NONCE._domainkey.$DOMAIN" 2>/dev/null)" ]; then
     echo "(catch-all/wildcard _domainkey detected — DKIM selector probing is unreliable here; skipped)"
   else
     for s in google k1 k2 k3 s1 s2 selector1 selector2 resend cio em krs mte1 scph0323 mandrill sendgrid smtp sparkpost pm-bounces mg s1024 fdm dkim; do
-      r=$( { dig +short CNAME "$s._domainkey.$DOMAIN"; dig +short TXT "$s._domainkey.$DOMAIN" | head -1 | cut -c1-80; } 2>/dev/null )
+      r=$( { dns CNAME "$s._domainkey.$DOMAIN"; dns TXT "$s._domainkey.$DOMAIN" | head -1 | cut -c1-80; } 2>/dev/null )
       # only report records that are actually DKIM keys or CNAMEs to a known ESP — not noise
       [ -n "$r" ] && echo "$r" | grep -qiE 'DKIM1|k=rsa|p=MI|sendgrid|mcsv|mcdlv|mailgun|mandrill|customeriomail|sparkpost|mtasv|amazonses|onmicrosoft|proofpoint|ondmarc|dkim' && echo "$s => $r"
     done
