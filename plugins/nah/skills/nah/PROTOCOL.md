@@ -35,7 +35,12 @@ Adapted from The Last Harness architect prompt (v0.33.0), keeping the gates verb
 
 `tk` reference: `tk show <id>` · `tk create "<title>" -d "<desc>" --acceptance "<criteria>" [--design "<notes>"]` · `tk dep <id> <depends-on>` · `tk ready` · `tk blocked` · `tk start <id>` · `tk close <id>` · `tk add-note <id> "<text>"` · `tk dep tree [--full] <id>` · `tk help`.
 
-Tickets live in `.tickets/` at the repo root, one markdown file each, YAML frontmatter with `status: open|in_progress|closed` and `deps: [...]`. `tk` walks up from cwd to find `.tickets`; `TICKETS_DIR` overrides. There is no delete command; deletion is `rm .tickets/<id>.md`.
+Tickets are markdown files with YAML frontmatter (`status: open|in_progress|closed`, `deps: [...]`), one per ticket. Where they live depends on the repository:
+
+- **Backlog repositories** (the repo has `docs/backlog/`: an index `README.md` and one item file per improvement, `IMP-NN-<slug>.md`): tickets live in `docs/backlog/tickets/` and are committed with the work; they are the record. `export TICKETS_DIR=docs/backlog/tickets` in the architect session and put the same assignment at the start of every developer task text, because subagents call `tk` by name. The ticket tree is cut from one backlog item; every ticket title starts with the item id (`IMP-NN: ...`); when the work ships, the item file gets the date, the commit and the ticket ids, and its row in the index changes to done.
+- **Other repositories**: `.tickets/` at the repo root, found by `tk` walking up from cwd; session tickets are removed at cleanup unless the repo tracks them on purpose.
+
+There is no delete command; deletion is `rm <tickets dir>/<id>.md`.
 
 After approval:
 
@@ -63,7 +68,7 @@ The approved tickets are the only implementation artifacts the developer relies 
 For each ready ticket:
 
 1. `tk ready` to pick the next dependency-unblocked ticket; `tk start <id>`.
-2. Dispatch one ticket to `nah:nah-developer`. Task text: `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.` Add ticket-specific validation constraints or sequencing.
+2. Dispatch one ticket to `nah:nah-developer`. Task text: `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.` In a backlog repository the text starts with `export TICKETS_DIR=docs/backlog/tickets`. Add ticket-specific validation constraints or sequencing.
 3. The developer cannot ask questions mid-run. If its report is a blocker, answer it and re-dispatch with the decision included.
 4. The ticket is met when every acceptance criterion shows in the diff; read the diff yourself when the report is thin.
 5. Send focused corrections back as a new dispatch when a criterion is missing.
@@ -122,8 +127,8 @@ When the user asks only for a review: skip orientation and planning, run the rev
 ## Cleanup
 
 1. Start only after final review and any review-driven fixes are finished.
-2. Remove tickets created for this workflow once closed: check `tk dep tree <id>` or `grep -r '<id>' .tickets/` for dangling references, then `rm .tickets/<id>.md`.
-3. Verify no session-created `.tickets/` files remain tracked, staged, in the worktree, or in the final commit, unless the repository tracks tickets deliberately.
+2. Backlog repository: keep the closed tickets in `docs/backlog/tickets/` and commit them; update the backlog item file (date, commit, ticket ids) and its index row.
+3. Other repositories: remove tickets created for this workflow once closed: check `tk dep tree <id>` or `grep -r '<id>' .tickets/` for dangling references, then `rm .tickets/<id>.md`; verify no session-created `.tickets/` files remain tracked, staged, in the worktree, or in the final commit.
 4. Commits and PRs happen when the user asks.
 
 ## Running roles through pi

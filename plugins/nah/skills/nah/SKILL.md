@@ -62,8 +62,11 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.
    When the work ships as a PR, package it with `${CLAUDE_PLUGIN_ROOT}/skills/nah/PR.md`; every PR body ends with the NAH footer line.
-8. **Cleanup**: after review and fixes: `rm .tickets/<id>.md` for session tickets (`grep -r <id> .tickets/` first);
-   `.tickets` files stay out of the commit unless the repo tracks them on purpose.
+8. **Cleanup**: after review and fixes. In a **backlog repository** (`docs/backlog/` exists) tickets live in
+   `docs/backlog/tickets/` (`export TICKETS_DIR=docs/backlog/tickets`, also at the start of each developer task), are
+   cut from one backlog item (`IMP-NN: ...` titles), stay committed as the record, and the item file and index row are
+   updated when the work ships (PROTOCOL "Planning and tickets"). Elsewhere: `rm .tickets/<id>.md` for session
+   tickets (`grep -r <id> .tickets/` first); `.tickets` files stay out of the commit unless the repo tracks them.
 
 ## Mandatory challenge triggers
 
