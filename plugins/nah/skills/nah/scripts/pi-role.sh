@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run one tlh role headlessly through the standalone `pi` CLI (~/.pi/agent profile).
+# Run one nah role headlessly through the standalone `pi` CLI (~/.pi/agent profile).
 # Usage: pi-role.sh <role> [--model provider/id] [--thinking lvl] [--cwd dir] [--out file] [--timeout secs] [--rw] <task...>
 #        echo "task" | pi-role.sh <role>            (task on stdin)
 # Roles = files in ../roles/<role>.md (system prompt). Defaults from ../roles/models.env.
@@ -43,5 +43,5 @@ if grep -q 'refresh_token_invalidated\|401\|not authenticated\|No credentials' "
   echo "AUTH ERROR for provider ${model%%/*}: run \`pi\` then \`/login ${model%%/*}\`, quit, and retry." >&2
 fi
 [[ $rc -ne 0 ]] && { echo "pi exited $rc (model $model)" >&2; sed 's/^/  /' "$tmp/err" >&2 | tail -20; }
-{ echo "<!-- tlh role=$role model=$model thinking=$thinking cwd=$cwd -->"; printf '%s\n' "$result"; } | tee -a "${out:-/dev/null}"
+{ echo "<!-- nah role=$role model=$model thinking=$thinking cwd=$cwd -->"; printf '%s\n' "$result"; } | tee -a "${out:-/dev/null}"
 exit $rc

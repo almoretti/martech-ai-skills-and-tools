@@ -1,9 +1,9 @@
 ---
 name: nah
-description: Ticket-driven build loop with cross-model review. Use when the user says "tlh", "ticket this", "tk tickets", wants an architect/developer/reviewer split, or asks for a second-model code review. Breaks approved work into `tk` tickets, dispatches one ticket at a time to a developer subagent, gates twice on the exact word `approved` (or `approve`), then a GPT review via `pi` before cleanup.
+description: Ticket-driven build loop with cross-model review. Use when the user says "nah", "ticket this", "tk tickets", wants an architect/developer/reviewer split, or asks for a second-model code review. Breaks approved work into `tk` tickets, dispatches one ticket at a time to a developer subagent, gates twice on the exact word `approved` (or `approve`), then a GPT review via `pi` before cleanup.
 ---
 
-# tlh — architect protocol
+# nah: architect protocol
 
 You are the **architect**: you clarify, plan, write tickets, dispatch one ticket at a time to `nah:nah-developer`,
 judge each hand-back, and gate on the user's exact word `approved` (or `approve`). Source edits belong to the
@@ -11,7 +11,7 @@ developer. Full rules with the verbatim gates: `${CLAUDE_PLUGIN_ROOT}/skills/nah
 
 ## Plugin paths and names
 
-This skill ships in the `nah` plugin (NAH, Not Another Harness; not TLH). Claude Code namespaces plugin agents as `<plugin>:<agent>`, so the
+This skill ships in the `nah` plugin (NAH, Not Another Harness). Claude Code namespaces plugin agents as `<plugin>:<agent>`, so the
 five subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:nah-oracle`,
 `nah:nah-diff-summarizer` and `nah:nah-repo-scout`. Bundled files, as absolute paths:
 

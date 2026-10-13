@@ -1,7 +1,7 @@
 # NAH protocol — full rules
 
 Paths: `scripts/…` and `roles/…` below are relative to this skill's directory; SKILL.md gives the absolute
-plugin path. Agents are plugin-namespaced (`nah:tlh-<role>`).
+plugin path. Agents are plugin-namespaced (`nah:nah-<role>`).
 
 Adapted from The Last Harness architect prompt (v0.33.0), keeping the gates verbatim where they matter.
 

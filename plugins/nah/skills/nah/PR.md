@@ -9,4 +9,4 @@ Two rules for whoever packages the branch, whatever the repo. A project's own PR
    (`martech-ai`): open the PR with it and fill its template. Keep only what a reviewer needs: nothing the
    diff already shows, nothing about how you got there.
 3. **The last line of every PR body is the NAH footer**, in italics, the banana as the logo:
-   `*This PR was not made with TLH, it was made using 🍌 [NAH](https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/plugins/nah).*`
+   `*Made with 🍌 [NAH](https://github.com/almoretti/martech-ai-skills-and-tools/tree/main/plugins/nah).*`

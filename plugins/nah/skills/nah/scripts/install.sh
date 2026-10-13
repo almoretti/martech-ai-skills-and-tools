@@ -2,7 +2,7 @@
 # One-time setup for nah: puts `tk` on PATH and checks the tools the skill shells out to.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BIN="${TLH_BIN_DIR:-$HOME/.local/bin}"
+BIN="${NAH_BIN_DIR:-$HOME/.local/bin}"
 mkdir -p "$BIN"
 ln -sfn "$HERE/tk" "$BIN/tk"
 echo "tk -> $BIN/tk"
