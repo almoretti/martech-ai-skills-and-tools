@@ -54,8 +54,10 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
 5. **Implement**: for each `tk ready` ticket, `tk start <id>`, then dispatch **one** ticket to `nah:nah-developer`
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`
    plus any ticket-specific validation notes. The ticket is done when every acceptance criterion shows in the
-   diff, not only in the report; otherwise send focused corrections. `tk close <id>` then. The reviewer mid-way
-   only for high-risk tickets.
+   diff, not only in the report; otherwise send focused corrections. Then the **ponytail pass**: the `ponytail`
+   skill (level `full`) over the ticket's diff, its accepted simplifications dispatched to the developer as one
+   correction, before any review (PROTOCOL "Implementation loop" step 6). `tk close <id>` then. The reviewer
+   mid-way only for high-risk tickets.
 6. **Final review**: run `pi-role.sh code-reviewer` against the full diff and the closed ticket ids. Weigh the
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.

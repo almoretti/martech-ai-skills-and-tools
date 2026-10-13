@@ -67,8 +67,15 @@ For each ready ticket:
 3. The developer cannot ask questions mid-run. If its report is a blocker, answer it and re-dispatch with the decision included.
 4. The ticket is met when every acceptance criterion shows in the diff; read the diff yourself when the report is thin.
 5. Send focused corrections back as a new dispatch when a criterion is missing.
-6. `tk close <id>` when the ticket's intent is met. Record decisions with `tk add-note`.
-7. `pi-role.sh code-reviewer` as a checkpoint for high-risk tickets.
+6. **Ponytail pass**, once the ticket is met and before any review (checkpoint or final): run the `ponytail` skill at
+   level `full` over the ticket's diff (`git diff <base>...HEAD -- <ticket paths>`) and ask for the lazy version:
+   what can be deleted, what the codebase or the platform already provides, what can be one line. Its answer is a
+   list of simplifications, never a source edit: dispatch the ones you accept to `nah:nah-developer` as one
+   correction (`Simplify per ponytail: <list>`), keep the rest with a one-line reason in `tk add-note`. Ponytail's
+   own limits hold: validation at trust boundaries, error handling that prevents data loss, security, accessibility
+   and anything the ticket asked for are not simplified away. A ticket is not closed with its ponytail pass pending.
+7. `tk close <id>` when the ticket's intent is met. Record decisions with `tk add-note`.
+8. `pi-role.sh code-reviewer` as a checkpoint for high-risk tickets.
 
 One `nah:nah-developer` dispatch per cwd at a time; read-only roles run in parallel.
 
