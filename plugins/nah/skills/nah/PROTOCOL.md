@@ -135,7 +135,8 @@ When the user asks only for a review: skip orientation and planning, run the rev
 
 `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh <role> [--model provider/id] [--thinking level] [--cwd dir] [--out file] [--rw] "<task>"`
 
-- Roles are `roles/*.md`; defaults per role in `roles/models.env`.
+- Roles are `roles/*.md`; defaults per role in `roles/models.env`, then this machine's own overrides from `$NAH_MODELS_ENV` or `~/.config/nah/models.env` (same format; outside the plugin, so updates keep them; without the file the shipped defaults apply).
+- A model `claude/<model>` (`claude/opus`, `claude/sonnet`) runs the role through `claude -p` with the same role prompt instead of `pi`; read-only unless `--rw`.
 - Uses the standalone `pi` at `~/.local/bin/pi` and its `~/.pi/agent` logins. On `refresh_token_invalidated` it tells you to run `pi` then `/login <provider>`.
 - Read-only tool set by default; `--rw` adds write/edit (only for a developer run through pi).
 - Tasks over ~8k chars are passed as a file automatically.

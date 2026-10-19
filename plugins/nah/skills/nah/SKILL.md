@@ -26,7 +26,7 @@ five subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah
 | Role | Runs as | Model (edit here) |
 |---|---|---|
 | developer | Agent `nah:nah-developer` | plugin `agents/nah-developer.md` → `model:` |
-| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer` (GPT via pi) | `roles/models.env` |
+| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer` (GPT via pi) | `roles/models.env`; per machine `~/.config/nah/models.env` (a pi model, or `claude/<model>` through `claude -p`) |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
 | diff-summarizer, repo-scout | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout` | plugin `agents/*.md` |
 
