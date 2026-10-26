@@ -4,12 +4,12 @@
     "name": "Alessandro Moretti",
     "url": "https://github.com/almoretti"
   },
-  "description": "Martech AI skills & read-only CLIs for AI agents \u00e2\u20ac\u201d martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
+  "description": "Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
   "plugins": [
     {
       "name": "martech-ai-skills",
       "source": "./",
-      "description": "Martech AI skills & read-only CLIs for AI agents \u00e2\u20ac\u201d martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
+      "description": "Martech AI skills & read-only CLIs for AI agents — martech teardown, Google Ads, Microsoft Ads, Google Merchant Center.",
       "category": "marketing",
       "keywords": [
         "martech",
@@ -30,5 +30,8 @@
       "source": "./plugins/nah",
       "description": "NAH, Not Another Harness: ticket-driven build loop with cross-vendor code review (architect session, tk tickets, one-ticket-at-a-time developer subagent, GPT reviewer via pi)."
     }
+  ],
+  "allowCrossMarketplaceDependenciesOn": [
+    "ponytail"
   ]
 }

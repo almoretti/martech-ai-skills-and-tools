@@ -1,8 +1,11 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": {
     "name": "Alessandro Moretti"
   },
   "name": "nah",
-  "description": "NAH, Not Another Harness: ticket-driven build loop with cross-vendor code review (architect session, tk tickets, one-ticket-at-a-time developer subagent, GPT reviewer via pi)."
+  "description": "NAH, Not Another Harness: ticket-driven build loop with cross-vendor code review (architect session, tk tickets, one-ticket-at-a-time developer subagent, GPT reviewer via pi).",
+  "dependencies": [
+    "ponytail@ponytail"
+  ]
 }

@@ -66,6 +66,22 @@ const marketplaceJson = {
   ],
 };
 
+// Standalone plugins under plugins/<name>/ (each with its own .claude-plugin/plugin.json) are listed beside the
+// bundle. A dependency on another marketplace's plugin (`name@marketplace`) needs that marketplace allowlisted.
+const PLUGINS_DIR = join(ROOT, 'plugins');
+const allow = new Set();
+for (const name of existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR).sort() : []) {
+  const pj = join(PLUGINS_DIR, name, '.claude-plugin', 'plugin.json');
+  if (!existsSync(pj)) continue;
+  const p = JSON.parse(readFileSync(pj, 'utf8'));
+  marketplaceJson.plugins.push({ name: p.name, source: `./plugins/${name}`, description: p.description });
+  for (const dep of p.dependencies || []) {
+    const m = typeof dep === 'string' ? dep.split('@')[1] : dep.marketplace;
+    if (m && m !== MARKETPLACE_NAME) allow.add(m);
+  }
+}
+if (allow.size) marketplaceJson.allowCrossMarketplaceDependenciesOn = [...allow].sort();
+
 const dir = join(ROOT, '.claude-plugin');
 if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, 'plugin.json'), JSON.stringify(pluginJson, null, 2) + '\n');

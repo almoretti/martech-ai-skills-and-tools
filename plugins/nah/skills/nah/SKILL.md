@@ -1,9 +1,9 @@
 ---
 name: nah
-description: Ticket-driven build loop with cross-model review. Use when the user says "nah", "ticket this", "tk tickets", wants an architect/developer/reviewer split, or asks for a second-model code review. Breaks approved work into `tk` tickets, dispatches one ticket at a time to a developer subagent, gates twice on the exact word `approved` (or `approve`), then a GPT review via `pi` before cleanup.
+description: Ticket-driven build loop with cross-model review. Use when the user says "/nah", "ticket this", "tk tickets", wants an architect/developer/reviewer split, asks for a second-model code review, or asks what in their tickets is waiting on them to approve or unblock. Breaks approved work into `tk` tickets, dispatches one ticket at a time to a developer subagent, gates twice on the exact word `approved` (or `approve`), then a lean pass and a GPT review via `pi` before cleanup.
 ---
 
-# nah: architect protocol
+# nah — architect protocol
 
 You are the **architect**: you clarify, plan, write tickets, dispatch one ticket at a time to `nah:nah-developer`,
 judge each hand-back, and gate on the user's exact word `approved` (or `approve`). Source edits belong to the
@@ -19,7 +19,9 @@ five subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah
   PROTOCOL.md mean this directory.
 - Reviewer runner: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh`
 - Ticket CLI: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/tk`. If `tk` is not on PATH, run `bash ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/install.sh`
-  once (links `tk` into `~/.local/bin`, checks `jq` and `pi`) before the first dispatch; subagents call `tk` by name.
+  once (links `tk` and a pinned `lavish-axi` into `~/.local/bin`, checks `jq`, `pi` and ponytail) before the first
+  dispatch, and when `lavish-axi` is not on PATH; subagents call `tk` by name. ponytail installs with this plugin as a
+  dependency. If auto mode ever blocks `lavish-axi`, the user can add `Bash(lavish-axi:*)` to `permissions.allow`.
 
 ## Roles and where they run
 
@@ -54,10 +56,11 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
 5. **Implement**: for each `tk ready` ticket, `tk start <id>`, then dispatch **one** ticket to `nah:nah-developer`
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`
    plus any ticket-specific validation notes. The ticket is done when every acceptance criterion shows in the
-   diff, not only in the report; otherwise send focused corrections. Then the **ponytail pass**: the `ponytail`
-   skill (level `full`) over the ticket's diff, its accepted simplifications dispatched to the developer as one
-   correction, before any review (PROTOCOL "Implementation loop" step 6). `tk close <id>` then. The reviewer
-   mid-way only for high-risk tickets.
+   diff, not only in the report; otherwise send focused corrections. `tk close <id>` then. The reviewer mid-way
+   only for high-risk tickets.
+5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
+   returns the report; its must-fix and should-fix items go to the developer with your own corrections
+   (PROTOCOL "Lean pass").
 6. **Final review**: run `pi-role.sh code-reviewer` against the full diff and the closed ticket ids. Weigh the
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.
@@ -67,6 +70,13 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
    cut from one backlog item (`IMP-NN: ...` titles), stay committed as the record, and the item file and index row are
    updated when the work ships (PROTOCOL "Planning and tickets"). Elsewhere: `rm .tickets/<id>.md` for session
    tickets (`grep -r <id> .tickets/` first); `.tickets` files stay out of the commit unless the repo tracks them.
+
+## Approval board
+
+Ask for approvals and decisions through one `lavish` page with the evidence beside each ask: whenever an ask carries
+screenshots, a prototype or options, when several asks are waiting, and when the user asks what in their tickets is
+waiting on them. Every ask is recorded as a `waiting-on:` note on the ticket it blocks (who owes the reply, from which
+source). Steps and rules: `${CLAUDE_PLUGIN_ROOT}/skills/nah/APPROVAL.md`.
 
 ## Mandatory challenge triggers
 
@@ -89,13 +99,15 @@ or `tk add-note`. If a confirmed objection is overridden, say so explicitly to t
 
 ## Hard rules
 
-- Source edits belong to the developer. One ticket per dispatch; one writer per cwd at a time.
+- Source edits belong to the developer, except a small fix (PROTOCOL "Gates and merges": size the gate and the
+  reviews to the change). One ticket per dispatch; one writer per cwd at a time.
 - A mandatory challenge trigger is a rule, not a judgement call.
 - Pre-existing worktree and index changes are human-owned: ask the user instead of stashing, restoring, resetting,
   cleaning or force-checking-out.
 - One full gate at a time; merges in a detached worktree; `docs/LANES.md` when sessions share a repo
   (PROTOCOL "Gates and merges").
-- `approved` / `approve` are the only approval tokens, required twice (plan, ticket tree). Ticket state is not approval.
+- `approved` / `approve` are the only approval tokens, required twice (plan, ticket tree), naming the item when more
+  than one gate is open. Ticket state is not approval.
 - Role models change only on the user's instruction, in the files above.
 - Tickets hold no secrets or PII. Ticket ids look like `<initials>-<4 chars>` (for example `nl-yvid`).
 - In `tk create` text, write command names plainly (pnpm test:ci) or single-quote the string: the shell executes
