@@ -34,9 +34,9 @@ tk add-note <id> 'answered: <ask> · <reply>'    # when the reply arrives
    `grep -rn 'waiting-on:' "${TICKETS_DIR:-.tickets}"` in this repo (`docs/backlog/tickets/` in a backlog repository);
    across projects when the user asks for everything, from every `.tickets/` and `docs/backlog/tickets/` under the
    working root. Split them by `<who>`: the user's own are the asks, the rest go in a short
-   **Waiting on others** section with their source and no reply asked. Done when each ask names **the reply that
-   unblocks it**: the gate word with the item (`approved markers`), a choice (`A`, `B`, `C` or a mix), or the result
-   to report back.
+   **Waiting on others** section with their source and no reply asked. When the tickets carry `lane-*` tags, group
+   the asks by lane. Done when each ask names **the reply that unblocks it**: the gate word with the item
+   (`approved markers`), a choice (`A`, `B`, `C` or a mix), or the result to report back.
 2. **Gather the evidence.** For each ask: what changed and why in two or three sentences, your recommendation with
    its reason, and the proof. A UI ask shows screenshots at the sizes that matter, before and after side by side, and
    the approved spec beside the build when one exists. Copy the images into the page's folder (one scratchpad folder

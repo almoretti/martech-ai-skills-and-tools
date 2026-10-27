@@ -39,7 +39,13 @@ Adapted from The Last Harness architect prompt (v0.33.0), keeping the gates verb
 
 Tickets are markdown files with YAML frontmatter (`status: open|in_progress|closed`, `deps: [...]`), one per ticket. Where they live depends on the repository:
 
-- **Backlog repositories** (the repo has `docs/backlog/`: an index `README.md` and one item file per improvement, `IMP-NN-<slug>.md`): tickets live in `docs/backlog/tickets/` and are committed with the work; they are the record. `export TICKETS_DIR=docs/backlog/tickets` in the architect session and put the same assignment at the start of every developer task text, because subagents call `tk` by name. The ticket tree is cut from one backlog item; every ticket title starts with the item id (`IMP-NN: ...`); when the work ships, the item file gets the date, the commit and the ticket ids, and its row in the index changes to done.
+- **Backlog repositories** (the repo has `docs/backlog/`: an index `README.md` and one item file per improvement, `IMP-NN-<slug>.md`): tickets live in `docs/backlog/tickets/` and are committed with the work; they are the record. `export TICKETS_DIR=docs/backlog/tickets` in the architect session and put the same assignment at the start of every developer task text, because subagents call `tk` by name. The ticket tree is cut from one backlog item; every ticket title starts with the item id (`IMP-NN: ...`); when the work ships, the item file gets the date, the commit and the ticket ids, and its row in the index changes to done. **Lanes**, when the backlog README declares them (a short `Lanes` list of
+  the system's areas, for example serving, compliance, pricing): each item belongs to exactly one lane, shown in a
+  **Lane** column of the index; every ticket cut from it carries that lane's tag (`tk create ... --tags lane-<area>`).
+  An item that spans two lanes is split into two items. Items say the outcome; lanes say the area. The item id follows
+  its lane: each lane in the list has a short code (`serving (SRV)`), its items are `<CODE>-NN-<slug>.md` numbered per
+  lane, and their tickets are titled `<CODE>-NN: ...`; an item that moves lane takes the new lane's next id. Without
+  the list, no lanes, and items stay `IMP-NN`.
 - **Other repositories**: `.tickets/` at the repo root, found by `tk` walking up from cwd; session tickets are removed at cleanup unless the repo tracks them on purpose.
 
 There is no delete command; deletion is `rm <tickets dir>/<id>.md`.
@@ -106,11 +112,12 @@ Check `git diff --stat` against the base at every hand-back and before packaging
 - Merges happen in a detached temporary worktree (`git worktree add --detach`, merge, push `HEAD:main`); the main
   checkout only fast-forwards and runs no gate, so files another session left there stay out of every merge.
 - When more than one session works a repository, `docs/LANES.md` names each session's branch, paths and ports, one
-  line each, updated at dispatch; a session touches nothing in another lane. When the repository is not ours to commit
-  to, the lanes file lives in that repo's notes folder outside the clone (for dev-contribution:
-  `dev-contribution/<repo>/LANES.md`), each extra session works in its own git worktree (`<clone>-<ticket>`), never in
-  another session's checkout, and a shared notes file is edited per lane: only your own ticket's lines, re-read right
-  before writing.
+  line each, updated at dispatch; a session touches nothing in another lane. In a backlog repository with lanes, a
+  session claims a lane (or one item in it) on its line, so parallel sessions are split by area first. When the
+  repository is not ours to commit to, the lanes file lives in that repo's notes folder outside the clone (for
+  dev-contribution: `dev-contribution/<repo>/LANES.md`), each extra session works in its own git worktree
+  (`<clone>-<ticket>`), never in another session's checkout, and a shared notes file is edited per lane: only your own
+  ticket's lines, re-read right before writing.
 
 ## Final review
 

@@ -67,8 +67,9 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
    When the work ships as a PR, package it with `${CLAUDE_PLUGIN_ROOT}/skills/nah/PR.md`; every PR body ends with the NAH footer line.
 8. **Cleanup**: after review and fixes. In a **backlog repository** (`docs/backlog/` exists) tickets live in
    `docs/backlog/tickets/` (`export TICKETS_DIR=docs/backlog/tickets`, also at the start of each developer task), are
-   cut from one backlog item (`IMP-NN: ...` titles), stay committed as the record, and the item file and index row are
-   updated when the work ships (PROTOCOL "Planning and tickets"). Elsewhere: `rm .tickets/<id>.md` for session
+   cut from one backlog item (titled with its id: `IMP-NN: ...`, or the lane's `<CODE>-NN: ...` when the repo declares
+   lanes), stay committed as the record, and the item file and index row are updated when the work ships (PROTOCOL
+   "Planning and tickets"). Elsewhere: `rm .tickets/<id>.md` for session
    tickets (`grep -r <id> .tickets/` first); `.tickets` files stay out of the commit unless the repo tracks them.
 
 ## Approval board
@@ -104,8 +105,8 @@ or `tk add-note`. If a confirmed objection is overridden, say so explicitly to t
 - A mandatory challenge trigger is a rule, not a judgement call.
 - Pre-existing worktree and index changes are human-owned: ask the user instead of stashing, restoring, resetting,
   cleaning or force-checking-out.
-- One full gate at a time; merges in a detached worktree; `docs/LANES.md` when sessions share a repo
-  (PROTOCOL "Gates and merges").
+- One full gate at a time; merges in a detached worktree; `docs/LANES.md` when sessions share a repo, split by lane
+  in a backlog repository that declares lanes (PROTOCOL "Planning and tickets", "Gates and merges").
 - `approved` / `approve` are the only approval tokens, required twice (plan, ticket tree), naming the item when more
   than one gate is open. Ticket state is not approval.
 - Role models change only on the user's instruction, in the files above.
