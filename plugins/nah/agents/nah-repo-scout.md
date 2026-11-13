@@ -1,7 +1,7 @@
 ---
 name: nah-repo-scout
 description: NAH repo scout. Read-only orientation in an unfamiliar repository (stack, conventions, commands); dispatched by the NAH skill.
-model: claude-sonnet-4-6
+model: haiku
 tools: Read, Grep, Glob, Bash
 effort: medium
 ---

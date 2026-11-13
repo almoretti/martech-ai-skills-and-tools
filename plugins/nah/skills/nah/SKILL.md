@@ -12,8 +12,8 @@ developer. Full rules with the verbatim gates: `${CLAUDE_PLUGIN_ROOT}/skills/nah
 ## Plugin paths and names
 
 This skill ships in the `nah` plugin (NAH, Not Another Harness). Claude Code namespaces plugin agents as `<plugin>:<agent>`, so the
-five subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:nah-oracle`,
-`nah:nah-diff-summarizer` and `nah:nah-repo-scout`. Bundled files, as absolute paths:
+six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:nah-oracle`,
+`nah:nah-diff-summarizer`, `nah:nah-repo-scout` and `nah:nah-test-runner`. Bundled files, as absolute paths:
 
 - Skill dir: `${CLAUDE_PLUGIN_ROOT}/skills/nah` (`PROTOCOL.md`, `roles/`, `scripts/`). Relative `scripts/…` and `roles/…` paths in
   PROTOCOL.md mean this directory.
@@ -30,7 +30,7 @@ five subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah
 | developer | Agent `nah:nah-developer` | plugin `agents/nah-developer.md` → `model:` |
 | code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer` (GPT via pi) | `roles/models.env` |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
-| diff-summarizer, repo-scout | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout` | plugin `agents/*.md` |
+| diff-summarizer, repo-scout, test-runner | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` | plugin `agents/*.md` |
 
 The reviewer is intentionally a different vendor from the developer. Keep it that way unless the user
 says otherwise. Any role can also be run through pi: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh <role> --model provider/id "task"`.
@@ -57,7 +57,8 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`
    plus any ticket-specific validation notes. The ticket is done when every acceptance criterion shows in the
    diff, not only in the report; otherwise send focused corrections. `tk close <id>` then. The reviewer mid-way
-   only for high-risk tickets.
+   only for high-risk tickets. The final-validation ticket goes to `nah:nah-test-runner`
+   (PROTOCOL "Validation planning").
 5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
    returns the report; its must-fix and should-fix items go to the developer with your own corrections
    (PROTOCOL "Lean pass").

@@ -70,6 +70,7 @@ The approved tickets are the only implementation artifacts the developer relies 
 4. Make any validation deferral explicit in the ticket text.
 5. If `VALIDATING.md` exists, use it for the final-validation ticket; otherwise use repo-discovered commands.
 6. Ticket-local checks needed to implement safely run in the ticket, never deferred.
+7. Write the final-validation ticket as exact ordered commands, one per step. Dispatch it to `nah:nah-test-runner`, which runs the steps as written and reports `PASS` or `FAIL` per step. Task text: `Run the validation steps of tk ticket <id>. Run \`tk show <id>\` first.` (in a backlog repository it starts with `export TICKETS_DIR=docs/backlog/tickets`). A `FAIL` goes to `nah:nah-developer` as a fix dispatch, then the whole ticket runs again. Close the ticket when every step reports `PASS`.
 
 ## Implementation loop
 
@@ -152,7 +153,7 @@ When the user asks only for a review: skip orientation and planning, run the rev
 
 `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh <role> [--model provider/id] [--thinking level] [--cwd dir] [--out file] [--rw] "<task>"`
 
-- Roles are `roles/*.md`; defaults per role in `roles/models.env`.
+- Roles are `roles/*.md`; defaults per role in `roles/models.env`. A repository overrides them in `<repo>/.nah/models.env` (the same `<ROLE>_MODEL=` / `<ROLE>_THINKING=` lines, read as data); `--model` wins over both.
 - Uses the standalone `pi` at `~/.local/bin/pi` and its `~/.pi/agent` logins. On `refresh_token_invalidated` it tells you to run `pi` then `/login <provider>`.
 - Read-only tool set by default; `--rw` adds write/edit (only for a developer run through pi).
 - Tasks over ~8k chars are passed as a file automatically.

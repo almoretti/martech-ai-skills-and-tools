@@ -2,7 +2,7 @@
 # Run one nah role headlessly through the standalone `pi` CLI (~/.pi/agent profile).
 # Usage: pi-role.sh <role> [--model provider/id] [--thinking lvl] [--cwd dir] [--out file] [--timeout secs] [--rw] <task...>
 #        echo "task" | pi-role.sh <role>            (task on stdin)
-# Roles = files in ../roles/<role>.md (system prompt). Defaults from ../roles/models.env.
+# Roles = files in ../roles/<role>.md (system prompt). Defaults from ../roles/models.env, then <repo>/.nah/models.env.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROLES="$HERE/../roles"
@@ -11,14 +11,21 @@ role="${1:-}"; shift || true
 # shellcheck disable=SC1091
 source "$ROLES/models.env"
 key="$(echo "$role" | tr 'a-z-' 'A-Z_')"
-model="$(eval "echo \${${key}_MODEL:-}")"; thinking="$(eval "echo \${${key}_THINKING:-high}")"
+model=""; thinking=""
 cwd="$PWD"; out=""; tools="read,grep,find,ls,bash"; timeout="${PI_ROLE_TIMEOUT:-900}"
 while [[ $# -gt 0 ]]; do case "$1" in
   --model) model="$2"; shift 2;; --thinking) thinking="$2"; shift 2;;
   --cwd) cwd="$2"; shift 2;; --out) out="$2"; shift 2;; --timeout) timeout="$2"; shift 2;;
   --rw) tools="read,write,edit,grep,find,ls,bash"; shift;;
   --) shift; break;; *) break;; esac; done
-[[ -z "$model" ]] && { echo "no model for role $role: set ${key}_MODEL in roles/models.env or pass --model" >&2; exit 2; }
+# Project overrides: <repo>/.nah/models.env. Read as data (KEY=value lines only), never sourced: the repo is not trusted code.
+proj="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || echo "$cwd")/.nah/models.env"
+if [[ -f "$proj" ]]; then while IFS= read -r line; do
+  [[ "$line" =~ ^([A-Z_]+_(MODEL|THINKING))=([A-Za-z0-9._/:-]+)$ ]] && printf -v "${BASH_REMATCH[1]}" '%s' "${BASH_REMATCH[3]}"
+done < "$proj"; fi
+[[ -n "$model" ]] || model="$(eval "echo \${${key}_MODEL:-}")"
+[[ -n "$thinking" ]] || thinking="$(eval "echo \${${key}_THINKING:-high}")"
+[[ -z "$model" ]] && { echo "no model for role $role: set ${key}_MODEL in roles/models.env or <repo>/.nah/models.env, or pass --model" >&2; exit 2; }
 if [[ $# -gt 0 ]]; then task="$*"; else task="$(cat)"; fi
 [[ "$task" == Task:* ]] || task="Task: $task"
 PI="${PI_BIN:-$(command -v pi || true)}"
@@ -34,7 +41,7 @@ export GIT_PAGER=cat PAGER=cat
   --tools "$tools" --model "$model" --thinking "$thinking" \
   --system-prompt "$sys" "@$tmp/task.md" >"$tmp/out" 2>"$tmp/err" ) &
 pid=$!
-( sleep "$timeout"; if kill -0 "$pid" 2>/dev/null; then echo "WATCHDOG: role $role exceeded ${timeout}s; killing pi and its children" >>"$tmp/err"; pkill -P "$pid" 2>/dev/null; kill "$pid" 2>/dev/null; fi ) 2>/dev/null & wd=$!
+( sleep "$timeout"; if kill -0 "$pid" 2>/dev/null; then echo "WATCHDOG: role $role exceeded ${timeout}s; killing pi and its children" >>"$tmp/err"; pkill -P "$pid" 2>/dev/null; kill "$pid" 2>/dev/null; fi ) >/dev/null 2>&1 & wd=$!
 wait "$pid"; rc=$?
 kill "$wd" 2>/dev/null; wait "$wd" 2>/dev/null
 result="$(cat "$tmp/out")"

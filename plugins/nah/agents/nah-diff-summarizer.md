@@ -1,7 +1,7 @@
 ---
 name: nah-diff-summarizer
 description: NAH diff summarizer. Read-only terse summary of the current VCS diff and risk hotspots; dispatched by the NAH skill.
-model: claude-sonnet-4-6
+model: haiku
 tools: Read, Grep, Glob, Bash
 effort: medium
 ---
