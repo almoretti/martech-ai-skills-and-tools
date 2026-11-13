@@ -51,7 +51,8 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
    before asking for signoff (see Mandatory challenge triggers). Restate the agreement with the contrarian's
    confirmed objections addressed. Proceed only on `approved` or `approve`.
 3. **Ticket**: create a small `tk` dependency tree of reviewable slices, each with acceptance criteria. Put broad
-   verification in a final-validation ticket that depends on the rest. Show the tree. Wait for `approved` again.
+   verification in a final-validation ticket that depends on the rest; it names each surface the change shows on
+   (browser, emulator, CLI, database, API), probed for reach first (PROTOCOL "Validation surfaces"). Show the tree. Wait for `approved` again.
 4. **Branch**: immediately before the first dispatch, and only if on `main`/`master`, create a branch. Otherwise ask.
 5. **Implement**: for each `tk ready` ticket, `tk start <id>`, then dispatch **one** ticket to `nah:nah-developer`
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`

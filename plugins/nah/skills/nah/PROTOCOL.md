@@ -72,6 +72,30 @@ The approved tickets are the only implementation artifacts the developer relies 
 6. Ticket-local checks needed to implement safely run in the ticket, never deferred.
 7. Write the final-validation ticket as exact ordered commands, one per step. Dispatch it to `nah:nah-test-runner`, which runs the steps as written and reports `PASS` or `FAIL` per step. Task text: `Run the validation steps of tk ticket <id>. Run \`tk show <id>\` first.` (in a backlog repository it starts with `export TICKETS_DIR=docs/backlog/tickets`). A `FAIL` goes to `nah:nah-developer` as a fix dispatch, then the whole ticket runs again. Close the ticket when every step reports `PASS`.
 
+### Validation surfaces
+
+A **surface** is where the change can be observed working. The final-validation ticket checks the change on every surface it shows on, with the tool this session reaches that surface by:
+
+| The change shows in | Surface | Reached by (examples) |
+|---|---|---|
+| A web page or component | browser | a browser CLI or MCP: load the page, act, read the DOM or console, screenshot |
+| A mobile screen | emulator or simulator | `adb`, `xcrun simctl`, a UI test runner |
+| A command, script or build | CLI | the command itself, its exit code and output |
+| Stored data, a migration, a job | database | a query client, reading counts or the rows the test created |
+| An endpoint or integration | API | `curl` or the project's client against a local or test instance |
+
+A change can show on several surfaces (a form: browser and database); a surface outside this table follows the same rule.
+
+1. **Name** the surfaces in the ticket, from what the change touches.
+2. **Probe** each one before the ticket-tree gate, with the cheapest call that proves reach: the tool answers, the page loads, a device is listed, the database answers a trivial query.
+3. **Assign** each step to who can run it:
+   - `runner`: a shell command `nah:nah-test-runner` runs as written.
+   - `architect`: needs a tool only this session holds (an MCP browser, a connector); you run it after the runner passes and record the result with `tk add-note`.
+   - `user`: the probe failed, or the step needs access or judgement the session lacks; write what to check and what passing looks like.
+4. **Show** the surfaces, the probe results and every `user` step with the ticket tree, so the approval covers them. A surface with no step is stated as a gap, with the reason.
+
+The ticket closes when every `runner` and `architect` step passed and each `user` step is confirmed by the user or recorded as a `waiting-on:` note.
+
 ## Implementation loop
 
 For each ready ticket:
