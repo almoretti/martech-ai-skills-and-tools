@@ -16,3 +16,11 @@ Report, tersely:
 - Risk notes: generated files, migrations, secrets handling, CI expectations, anything a developer must not touch.
 
 Cite file paths for each claim. Do not propose changes.
+
+## Surface reach
+
+When the task is `Surface reach for <surfaces>`, skip the orientation report and read the catalogue file the task names: it lists each surface with example routes. For each named surface, find how a shell command could reach it: a CLI on the PATH, or the project's own scripts and test setup. Probe the first route that fits with the cheapest read-only call that proves reach: the tool answers, the page loads, a device is listed, the database answers a trivial query.
+
+Return one line per surface and nothing else:
+
+`<surface> | <route, as the command to use> | reached / not reached | <if not reached: what is missing, and the cheapest way to get it>`

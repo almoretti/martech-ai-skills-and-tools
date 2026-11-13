@@ -74,25 +74,22 @@ The approved tickets are the only implementation artifacts the developer relies 
 
 ### Validation surfaces
 
-A **surface** is where the change can be observed working. The final-validation ticket checks the change on every surface it shows on, with the tool this session reaches that surface by:
+A **surface** is a place where the change is set up, observed working, or leaves a trace. The catalogue is `${CLAUDE_PLUGIN_ROOT}/skills/nah/SURFACES.md`, in four groups: setup (runtime, test data, flags, time), observe (browser, emulator, CLI, API, database, logs), outbound (tracking, messages, integrations, jobs, pipelines, content) and quality (visual, accessibility, security, CI, evidence). Read it when you plan a final-validation ticket.
 
-| The change shows in | Surface | Reached by (examples) |
-|---|---|---|
-| A web page or component | browser | a browser CLI or MCP: load the page, act, read the DOM or console, screenshot |
-| A mobile screen | emulator or simulator | `adb`, `xcrun simctl`, a UI test runner |
-| A command, script or build | CLI | the command itself, its exit code and output |
-| Stored data, a migration, a job | database | a query client, reading counts or the rows the test created |
-| An endpoint or integration | API | `curl` or the project's client against a local or test instance |
-
-A change can show on several surfaces (a form: browser and database); a surface outside this table follows the same rule.
-
-1. **Name** the surfaces in the ticket, from what the change touches.
-2. **Probe** each one before the ticket-tree gate, with the cheapest call that proves reach: the tool answers, the page loads, a device is listed, the database answers a trivial query.
-3. **Assign** each step to who can run it:
+1. **Name** the surfaces in the ticket, from what the change touches: the setup it needs, where it shows, what it sends out, the quality bars it could move.
+2. **Read the reach file**: `~/.config/nah/surfaces/<parent>-<folder>.md`, named from the working root and the folder that holds it (`Code-the-frontend`). The working root is the main checkout of a git repository (so its worktrees share one file), else the folder the session works in. It is this machine's record of how each surface of this project is reached, one line per surface: `<surface> | <route> | reached / not reached | <what is missing> | <date probed>`. It holds routes and dates; credentials and connection strings stay out of it.
+3. **Find a route** to each named surface that has no line in the file, or whose saved route fails its probe, and only to those. Two sources, in this order:
+   - your own tool list, read by name from what is already in context (a browser MCP, a database connector). No calls.
+   - one `nah:nah-repo-scout` dispatch for the rest. Task text: `Surface reach for <surfaces>. Catalogue: <absolute path of SURFACES.md>.` It searches the PATH and the repo's scripts and test setup, probes, and returns one line per surface; the search output stays in its context.
+4. **Probe** each route before the ticket-tree gate, saved or new, with the cheapest call that proves reach: the tool answers, the page loads, a device is listed, the database answers a trivial query. The scout's lines carry its probe results; probe the saved routes and the routes from your own tool list yourself.
+5. **Assign** each step to who can run it:
    - `runner`: a shell command `nah:nah-test-runner` runs as written.
    - `architect`: needs a tool only this session holds (an MCP browser, a connector); you run it after the runner passes and record the result with `tk add-note`.
    - `user`: the probe failed, or the step needs access or judgement the session lacks; write what to check and what passing looks like.
-4. **Show** the surfaces, the probe results and every `user` step with the ticket tree, so the approval covers them. A surface with no step is stated as a gap, with the reason.
+6. **Offer a route** for each surface no route reached: the cheapest way to get one (what to install, connect or log into) and what it would then automate. The user chooses: set it up now, then you probe again and the step moves to `runner` or `architect`; or keep the check as a `user` step for this change. A check that needs the user's judgement stays a `user` step.
+7. **Show** the surfaces, the route and probe result for each, every offer and every `user` step with the ticket tree, so the approval covers them. A surface with no step is stated as a gap, with the reason.
+8. **Order** the ticket: setup steps first, then the checks, then a step that stops what setup started. A setup step that leaves something running (a dev server, containers) is an `architect` step: start it in the background before you dispatch the runner.
+9. **Save** each probed surface's line to the reach file with today's date, replacing its old line; again after the user sets up an offered route and the new probe passes.
 
 The ticket closes when every `runner` and `architect` step passed and each `user` step is confirmed by the user or recorded as a `waiting-on:` note.
 
