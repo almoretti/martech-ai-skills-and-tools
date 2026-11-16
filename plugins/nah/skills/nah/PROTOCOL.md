@@ -190,8 +190,9 @@ first remote dispatch, and check the other machine's free memory before each one
   (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
 - `remote-dev.sh report <name>` prints HANDBACK.md (the durable report; a long final message scrolls out of the pane).
   `remote-dev.sh fetch <name>` brings the branch here; then the hand-back is judged exactly as a local one (lean
-  pass, corrections, review). A correction round is a new `herdr --machine <m> agent prompt <name> ...` to the same
-  session, then `wait` again.
+  pass, corrections, review). A correction round is `remote-dev.sh prompt <name> "<text>"` to the same session, then
+  `wait` again. Every prompt first answers the agent's own "trust this folder" and "compact earlier?" questions, which
+  otherwise swallow it; anything else blocking is left for you to read.
 - `remote-dev.sh close <name>` when the ticket is merged: ends the session, removes the worktree and its workspace.
   Never touch the user's own workspaces on that machine.
 - One developer per worktree still holds; one full gate per machine.
