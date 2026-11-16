@@ -17,9 +17,9 @@ six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:
 
 - Skill dir: `${CLAUDE_PLUGIN_ROOT}/skills/nah` (`PROTOCOL.md`, `roles/`, `scripts/`). Relative `scripts/…` and `roles/…` paths in
   PROTOCOL.md mean this directory.
-- Reviewer runner: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh`
+- Reviewer runner: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh` (the Codex CLI directly; back-up `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh`)
 - Ticket CLI: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/tk`. If `tk` is not on PATH, run `bash ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/install.sh`
-  once (links `tk` and a pinned `lavish-axi` into `~/.local/bin`, checks `jq`, `pi` and ponytail) before the first
+  once (links `tk` and a pinned `lavish-axi` into `~/.local/bin`, checks `jq`, `codex`, `pi` and ponytail) before the first
   dispatch, and when `lavish-axi` is not on PATH; subagents call `tk` by name. ponytail installs with this plugin as a
   dependency. If auto mode ever blocks `lavish-axi`, the user can add `Bash(lavish-axi:*)` to `permissions.allow`.
 
@@ -28,7 +28,7 @@ six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:
 | Role | Runs as | Model (edit here) |
 |---|---|---|
 | developer | Agent `nah:nah-developer` | plugin `agents/nah-developer.md` → `model:` |
-| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer` (GPT via pi) | `roles/models.env` |
+| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer` (GPT through the Codex CLI: in its own background Herdr tab when the session runs inside Herdr, headless otherwise; falls back to `pi-role.sh` when codex is missing, not signed in or returns no report) | Codex CLI default, or `--model`; the pi back-up: `roles/models.env` |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
 | diff-summarizer, repo-scout, test-runner | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` | plugin `agents/*.md` |
 
@@ -41,7 +41,7 @@ says otherwise. Any role can also be run through pi: `${CLAUDE_PLUGIN_ROOT}/skil
 tk ready                                  # next unblocked ticket (see Plugin paths if `tk` is not on PATH)
 tk create "Title" -d "What and why" --acceptance "Observable criteria"
 tk dep <id> <depends-on-id>
-${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review of tickets <ids> against git diff main...HEAD"
+${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final review of tickets <ids> against git diff main...HEAD"
 ```
 
 ## The loop (summary)
@@ -63,7 +63,7 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review 
 5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
    returns the report; its must-fix and should-fix items go to the developer with your own corrections
    (PROTOCOL "Lean pass").
-6. **Final review**: run `pi-role.sh code-reviewer` against the full diff and the closed ticket ids. Weigh the
+6. **Final review**: run `codex-role.sh code-reviewer` against the full diff and the closed ticket ids. Weigh the
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.
    When the work ships as a PR, package it with `${CLAUDE_PLUGIN_ROOT}/skills/nah/PR.md`; every PR body ends with the NAH footer line.
@@ -118,5 +118,5 @@ or `tk add-note`. If a confirmed objection is overridden, say so explicitly to t
 
 ## Review-only mode
 
-When the user asks only for a review (`/nah review`, "nah review this"): run `pi-role.sh code-reviewer` with a
+When the user asks only for a review (`/nah review`, "nah review this"): run `codex-role.sh code-reviewer` with a
 self-contained brief plus the base ref, then present your own digested take.

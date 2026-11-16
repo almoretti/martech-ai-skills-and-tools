@@ -21,6 +21,11 @@ if [[ -x "$LAVISH/node_modules/.bin/lavish-axi" ]]; then
   chmod +x "$BIN/lavish-axi"; echo "lavish-axi -> $BIN/lavish-axi (loopback only)"
 fi
 grep -qs "\"ponytail@" ~/.claude/plugins/installed_plugins.json || echo "MISSING: ponytail plugin (/plugin marketplace add DietrichGebert/ponytail, then /plugin install ponytail@ponytail) — the lean pass runs its ponytail-review"
+if command -v codex >/dev/null; then
+  codex login status >/dev/null 2>&1 && echo "codex: $(codex --version 2>/dev/null | head -1), signed in" || echo "NOTE: codex is not signed in; run \`codex login\` for the GPT reviewer (pi is the back-up)"
+else
+  echo "NOTE: codex not found; the GPT reviewer falls back to pi"
+fi
 if command -v pi >/dev/null; then
   echo "pi: $(pi --version 2>/dev/null | head -1)"
   pi --no-extensions --list-models 2>/dev/null | grep -q 'openai-codex' || echo "NOTE: no openai-codex models listed; run \`pi\` then \`/login openai-codex\` for the GPT reviewer"

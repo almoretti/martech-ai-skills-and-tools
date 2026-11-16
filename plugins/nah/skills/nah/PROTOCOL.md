@@ -104,7 +104,7 @@ For each ready ticket:
 5. Send focused corrections back as a new dispatch when a criterion is missing.
 5b. Run the lean pass (below), then send its items with your corrections in one dispatch.
 6. `tk close <id>` when the ticket's intent is met. Record decisions with `tk add-note`.
-7. `pi-role.sh code-reviewer` as a checkpoint for high-risk tickets.
+7. `codex-role.sh code-reviewer` as a checkpoint for high-risk tickets.
 
 One `nah:nah-developer` dispatch per cwd at a time; read-only roles run in parallel.
 
@@ -145,7 +145,7 @@ Check `git diff --stat` against the base at every hand-back and before packaging
 
 After all tickets are complete:
 
-1. Run `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh code-reviewer "Final review. Tickets: <ids>. Base ref: <branch-point>. Review the full diff against the tickets."` If tickets were deleted, include a self-contained brief and tell the reviewer not to run `tk`.
+1. Run `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final review. Tickets: <ids>. Base ref: <branch-point>. Review the full diff against the tickets."` If tickets were deleted, include a self-contained brief and tell the reviewer not to run `tk`.
 2. Critically evaluate the findings: push back on weak or speculative ones, confirm strong ones, apply your own judgment.
 3. Dispatch fixes to `nah:nah-developer`; re-review when the fix is material.
 4. Summarise implemented work, tradeoffs, validation and remaining risks for the user, in your own words.
@@ -169,6 +169,15 @@ When the user asks only for a review: skip orientation and planning, run the rev
 2. Backlog repository: keep the closed tickets in `docs/backlog/tickets/` and commit them; update the backlog item file (date, commit, ticket ids) and its index row.
 3. Other repositories: remove tickets created for this workflow once closed: check `tk dep tree <id>` or `grep -r '<id>' .tickets/` for dangling references, then `rm .tickets/<id>.md`; verify no session-created `.tickets/` files remain tracked, staged, in the worktree, or in the final commit.
 4. Commits and PRs happen when the user asks.
+
+## Running the reviewer through Codex
+
+`${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh <role> [--model id] [--cwd dir] [--out file] [--timeout secs] [--keep-tab] [--no-fallback] "<task>"`
+
+- Uses the `codex` CLI on the PATH and its own sign-in (`codex login`), read-only (`codex exec --sandbox read-only`); the role file is the first part of the prompt, the task the second; the report is Codex's last message.
+- Inside Herdr (`HERDR_ENV=1`) the run happens in a new background tab labelled `nah <role>`, so the user can watch it; the tab closes when the run ends (`--keep-tab` leaves it open). Outside Herdr it runs headless.
+- Back-up: when `codex` is missing, not signed in, or returns no report, the same role runs through pi (below) with the same task; `--no-fallback` turns that off. The report's first line says which runner produced it.
+- Default timeout 2700 s (`CODEX_ROLE_TIMEOUT`); a long review is started as a background command.
 
 ## Running roles through pi
 
