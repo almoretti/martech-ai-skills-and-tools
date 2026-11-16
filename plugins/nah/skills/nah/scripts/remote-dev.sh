@@ -49,6 +49,7 @@ while [[ $# -gt 0 ]]; do case "$1" in
 envf="$STATE/$name.env"
 load() { [[ -f "$envf" ]] || die "no remote developer named $name ($envf)"; source "$envf"; }
 h() { herdr --machine "$MACHINE" "$@"; }
+ready_count() { ssh "$SSHH" "grep -c '^HANDBACK-READY' ~/$BDIR/HANDBACK.md 2>/dev/null || echo 0" 2>/dev/null | tail -1; }
 # Answer the known questions that sit in front of the input box (see the header); up to three in a row.
 clear_dialogs() {
   local i screen
@@ -121,19 +122,29 @@ start)
   [[ -n "$DRY" ]] || clear_dialogs
   [[ -n "$DRY" ]] || h agent wait "$name" --until idle --timeout 60000 >/dev/null || die "agent $name is not ready: herdr --machine $MACHINE agent read $name"
   if [[ -n "$TICKET" ]]; then msg="$(cat "$BRIEF/PROMPT.md")"; rm -rf "$BRIEF"
-  else msg="Read ~/$bdir/PROMPT.md and do exactly what it says, end to end, without stopping to ask: nobody is at this keyboard. When done, write ~/$bdir/HANDBACK.md and stop."; fi
+  else msg="Read ~/$bdir/PROMPT.md and do exactly what it says, end to end, without stopping to ask: nobody is at this keyboard. When done, write ~/$bdir/HANDBACK.md, end it with HANDBACK-READY on its own line, and stop."; fi
   if [[ -n "$DRY" ]]; then run h agent prompt "$name" "$msg"; else send "$msg"; fi
   mkdir -p "$STATE"
   [[ -n "$DRY" ]] || printf 'MACHINE=%q\nSSHH=%q\nREPO=%q\nBRANCH=%q\nWS=%q\nBDIR=%q\n' "$MACHINE" "$SSHH" "$REPO" "$BRANCH" "$ws" "$bdir" > "$envf"
   echo "started $name on $MACHINE: workspace $ws, worktree $wt, branch $BRANCH, brief ~/$bdir"
   ;;
 prompt)
-  load; send "$TEXT"; echo "prompted $name; remote-dev.sh wait $name"
+  load; seen=$(ready_count); send "$TEXT"
+  sed -i.bak '/^READY0=/d' "$envf" && rm -f "$envf.bak"; echo "READY0=$seen" >> "$envf"
+  echo "prompted $name; remote-dev.sh wait $name"
   ;;
 wait)
-  load; t=(); [[ -n "$TIMEOUT" ]] && t=(--timeout "$TIMEOUT")
-  h agent wait "$name" ${t[@]+"${t[@]}"} | grep -o '"agent_status":"[a-z]*"' | head -1
-  ssh "$SSHH" "test -f ~/$BDIR/HANDBACK.md" && echo "HANDBACK ready: remote-dev.sh report $name" || echo "no HANDBACK.md yet: remote-dev.sh report $name shows the pane"
+  # Settled is not finished: an agent that waits on its own background work (a test loop) reports idle. Wait until
+  # a new HANDBACK-READY line appears (counted against the last start or prompt) or the agent is blocked.
+  load; t=(); [[ -n "$TIMEOUT" ]] && t=(--timeout "$TIMEOUT"); said=
+  while :; do
+    st=$(h agent wait "$name" ${t[@]+"${t[@]}"} 2>&1 | grep -o '"agent_status":"[a-z]*"' | head -1)
+    [[ "$st" == *blocked* ]] && { echo "$st: herdr --machine $MACHINE agent read $name"; exit 0; }
+    [[ "$(ready_count)" -gt "${READY0:-0}" ]] && { echo "$st"; echo "HANDBACK ready: remote-dev.sh report $name"; exit 0; }
+    [[ -n "$TIMEOUT" ]] && { echo "$st, no new HANDBACK-READY yet (timeout)"; exit 0; }
+    [[ -n "$said" ]] || { echo "$st without a new HANDBACK-READY (background work?); still waiting"; said=1; }
+    sleep 60
+  done
   ;;
 report)
   load; ssh "$SSHH" "cat ~/$BDIR/HANDBACK.md" 2>/dev/null || h agent read "$name" --source recent-unwrapped --lines 200

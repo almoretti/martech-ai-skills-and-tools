@@ -188,7 +188,7 @@ first remote dispatch, and check the other machine's free memory before each one
   `--brief <folder with PROMPT.md>` remain for other agents and for work that is not a ticket. `--skip-permissions` starts Claude without
   permission prompts: only when the user chose it.
 - **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
-  developer settles: `done`, `idle` or `blocked`. Never poll folders. On `blocked`, read the pane
+  developer has written a new HANDBACK-READY line or is `blocked`; an agent idle on its own background work (a test loop) is not finished, so the script keeps waiting. Never poll folders. On `blocked`, read the pane
   (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
 - `remote-dev.sh report <name>` prints HANDBACK.md (the durable report; a long final message scrolls out of the pane).
   `remote-dev.sh fetch <name>` brings the branch here; then the hand-back is judged exactly as a local one (lean
