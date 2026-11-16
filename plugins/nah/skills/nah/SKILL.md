@@ -28,7 +28,7 @@ six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:
 | Role | Runs as | Model (edit here) |
 |---|---|---|
 | developer | Agent `nah:nah-developer` | plugin `agents/nah-developer.md` → `model:` |
-| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer` (GPT through the Codex CLI: in its own background Herdr tab when the session runs inside Herdr, headless otherwise; falls back to `pi-role.sh` when codex is missing, not signed in or returns no report) | Codex CLI default, or `--model`; the pi back-up: `roles/models.env` |
+| code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer` (GPT through the Codex CLI. Inside Herdr: a real Codex session in its own background tab, named `nah-code-reviewer` and kept, so a re-review or a question goes to the same session with its memory, and the user can talk to it; outside Herdr: one headless run. Falls back to `pi-role.sh` when codex is missing, not signed in or leaves no report) | Codex CLI default, or `--model`; the pi back-up: `roles/models.env` |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
 | diff-summarizer, repo-scout, test-runner | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` | plugin `agents/*.md` |
 
@@ -63,7 +63,9 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final revi
 5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
    returns the report; its must-fix and should-fix items go to the developer with your own corrections
    (PROTOCOL "Lean pass").
-6. **Final review**: run `codex-role.sh code-reviewer` against the full diff and the closed ticket ids. Weigh the
+6. **Final review**: run `codex-role.sh code-reviewer` against the full diff and the closed ticket ids. Send the re-review of the fixes to the
+   same session (a second call with the same role), and end the session with `codex-role.sh code-reviewer --close` when
+   the review is settled. Weigh the
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.
    When the work ships as a PR, package it with `${CLAUDE_PLUGIN_ROOT}/skills/nah/PR.md`; every PR body ends with the NAH footer line.

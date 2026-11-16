@@ -172,12 +172,15 @@ When the user asks only for a review: skip orientation and planning, run the rev
 
 ## Running the reviewer through Codex
 
-`${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh <role> [--model id] [--cwd dir] [--out file] [--timeout secs] [--keep-tab] [--no-fallback] "<task>"`
+`${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh <role> [--model id] [--cwd dir] [--out file] [--timeout secs] [--fresh] [--no-fallback] "<task>"`
 
-- Uses the `codex` CLI on the PATH and its own sign-in (`codex login`), read-only (`codex exec --sandbox read-only`); the role file is the first part of the prompt, the task the second; the report is Codex's last message.
-- Inside Herdr (`HERDR_ENV=1`) the run happens in a new background tab labelled `nah <role>`, so the user can watch it; the tab closes when the run ends (`--keep-tab` leaves it open). Outside Herdr it runs headless.
-- Back-up: when `codex` is missing, not signed in, or returns no report, the same role runs through pi (below) with the same task; `--no-fallback` turns that off. The report's first line says which runner produced it.
-- Default timeout 2700 s (`CODEX_ROLE_TIMEOUT`); a long review is started as a background command.
+- Uses the `codex` CLI on the PATH and its own sign-in (`codex login`). Codex may read anywhere and may write only in its state folder (`~/.local/state/nah/codex/<role>`, sandbox `workspace-write` with that folder as its working directory); the repository under review is named in the prompt and stays untouched. The report is a file Codex writes there; the script prints it and appends it to `--out`.
+- **Inside Herdr** (`HERDR_ENV=1`): a real Codex session, started and driven with `herdr agent start`, `herdr agent prompt --wait` in a new background tab labelled `nah <role>`, named `nah-<role>`. The session is KEPT: a second call with the same role is a follow-up in the same conversation (a re-review of the fixes, a question about a finding), and the user can type into the tab. `--fresh` ends the old session and starts a new one.
+- **Cleaning up**, so that no dead tabs pile up: there is at most one tab per role in a workspace; every call first closes the tabs this script opened whose session has ended; `codex-role.sh <role> --close` ends the session and closes its tab; `codex-role.sh --sweep` closes every ended one. The script closes only tabs it opened itself (it records them in `~/.local/state/nah/codex/tabs.list`). **Run `--close` when the review of a change is settled, and before the session ends.**
+- **Outside Herdr**: one headless `codex exec` run with the same limits; no memory between calls.
+- Back-up: when `codex` is missing, not signed in, or leaves no report, the same role runs through pi (below) with the same task; `--no-fallback` turns that off. The report's first line says which runner produced it and whether it was a follow-up.
+- If the session is waiting for an answer (Herdr status `blocked`) the script says so and leaves the tab open: look at it with `herdr agent read nah-<role>` before sending anything.
+- Default timeout 2700 s (`CODEX_ROLE_TIMEOUT`); start a long review as a background command.
 
 ## Running roles through pi
 
