@@ -179,11 +179,13 @@ first remote dispatch, and check the other machine's free memory before each one
 - Needs: a Herdr saved machine with API forwarding, ssh to it from here, a clone of the repository there, the agent CLI
   signed in there. The tickets stay here; the developer gets the ticket as files in its brief.
 - `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/remote-dev.sh start <name> --machine <herdr machine> --ssh <user@host>
-  --repo <clone path there> --base <ref> --branch <branch> --brief <folder>` pushes the base, copies the brief, creates a
-  Herdr worktree and workspace there (`~/nah-wt/<name>`), starts the agent (`--kind claude|codex|pi`, `--model`) and
-  prompts it. The brief folder holds `PROMPT.md`: the dispatch text, the ticket (`tk show` output), the repository's
-  rules that apply, the validation to run, and "write HANDBACK.md in this folder and stop; never push". Nobody is at
-  that keyboard, so the brief must answer every question in advance. `--skip-permissions` starts Claude without
+  --repo <clone path there> --base <ref> --branch <branch> --ticket <id> [--notes <file>]` pushes the base, creates a
+  Herdr worktree and workspace there (`~/nah-wt/<name>`), copies the ticket with its parent and dependencies, and starts
+  the same developer as a local dispatch: Claude Code with `--agent nah:nah-developer` (the plugin installed there),
+  `TICKETS_DIR` pointing at the copied tickets, and the standard dispatch text "Implement tk ticket <id>", plus the
+  notes file for ticket-specific validation. Nothing is hand-written: the ticket is the brief. The script adds only
+  "nobody is at this keyboard; never push, merge or close; write the report to HANDBACK.md". `--kind codex|pi` and
+  `--brief <folder with PROMPT.md>` remain for other agents and for work that is not a ticket. `--skip-permissions` starts Claude without
   permission prompts: only when the user chose it.
 - **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
   developer settles: `done`, `idle` or `blocked`. Never poll folders. On `blocked`, read the pane

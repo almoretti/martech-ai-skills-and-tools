@@ -8,8 +8,15 @@
 #
 # Usage:
 #   remote-dev.sh start <name> --machine <herdr machine> --ssh <user@host> --repo <clone path on that machine>
-#                 --base <local ref> --branch <new branch> --brief <local folder with PROMPT.md>
-#                 [--kind claude|codex|pi] [--model id] [--skip-permissions] [--dry-run]
+#                 --base <local ref> --branch <new branch> (--ticket <tk id> [--notes <file>] | --brief <folder>)
+#                 [--kind claude|codex|pi] [--agent name] [--model id] [--skip-permissions] [--dry-run]
+#
+# --ticket is the normal way: the developer is the same nah developer as a local dispatch (Claude Code started with
+# --agent nah:nah-developer, so the plugin must be installed on that machine) and gets the same one-line dispatch:
+# "Implement tk ticket <id>". The ticket, its parent and its dependencies are copied from this clone's TICKETS_DIR
+# (default .tickets) into the brief folder, and TICKETS_DIR points there, so `tk show <id>` works on that machine
+# even when the tickets are not on the base branch. --notes adds ticket-specific validation notes, as a local
+# dispatch would. --brief <folder with PROMPT.md> remains for work that is not a ticket.
 #   remote-dev.sh prompt <name> <text...>        send a follow-up (a correction round) to the same session
 #   remote-dev.sh wait <name> [--timeout ms]     block until the developer settles (done, idle or blocked)
 #   remote-dev.sh report <name>                  print HANDBACK.md (or the pane's recent output when there is none)
@@ -31,11 +38,12 @@ run() { if [[ -n "${DRY:-}" ]]; then printf 'DRY:'; printf ' %q' "$@"; echo; els
 cmd="${1:-}"; name="${2:-}"; shift 2 || die "usage: see the header of $0"
 [[ "$name" =~ ^[a-z][a-z0-9_-]{0,31}$ ]] || die "name must match [a-z][a-z0-9_-]{0,31}"
 TEXT=; [[ "$cmd" == prompt ]] && { TEXT="$*"; [[ -n "$TEXT" ]] || die "prompt needs the text"; set --; }
-MACHINE= SSHH= REPO= BASE= BRANCH= BRIEF= KIND=claude MODEL= SKIP= DRY= TIMEOUT=
+MACHINE= SSHH= REPO= BASE= BRANCH= BRIEF= KIND=claude MODEL= SKIP= DRY= TIMEOUT= TICKET= NOTES= AGENT=
 while [[ $# -gt 0 ]]; do case "$1" in
   --machine) MACHINE=$2; shift 2;; --ssh) SSHH=$2; shift 2;; --repo) REPO=$2; shift 2;;
   --base) BASE=$2; shift 2;; --branch) BRANCH=$2; shift 2;; --brief) BRIEF=$2; shift 2;;
   --kind) KIND=$2; shift 2;; --model) MODEL=$2; shift 2;; --timeout) TIMEOUT=$2; shift 2;;
+  --ticket) TICKET=$2; shift 2;; --notes) NOTES=$2; shift 2;; --agent) AGENT=$2; shift 2;;
   --skip-permissions) SKIP=1; shift;; --dry-run) DRY=1; shift;;
   *) die "unknown option $1";; esac; done
 envf="$STATE/$name.env"
@@ -73,11 +81,30 @@ send() {
 
 case "$cmd" in
 start)
-  for v in MACHINE SSHH REPO BASE BRANCH BRIEF; do [[ -n "${!v}" ]] || die "start needs --machine, --ssh, --repo, --base, --branch and --brief"; done
+  for v in MACHINE SSHH REPO BASE BRANCH; do [[ -n "${!v}" ]] || die "start needs --machine, --ssh, --repo, --base and --branch"; done
+  [[ -n "$TICKET" || -n "$BRIEF" ]] || die "start needs --ticket <id> (or --brief <folder> for work that is not a ticket)"
   [[ "$MACHINE" != *" "* ]] || die "machine label with spaces: use its id"
+  bdir="nah-wt/$name-brief"
+  if [[ -n "$TICKET" ]]; then
+    TD="${TICKETS_DIR:-.tickets}"; [[ -f "$TD/$TICKET.md" ]] || die "no ticket $TD/$TICKET.md (set TICKETS_DIR)"
+    BRIEF="$(mktemp -d)"; mkdir -p "$BRIEF/tickets"
+    # the ticket, its parent and its dependencies, so tk show prints the same as here
+    for id in "$TICKET" $(sed -n -e 's/^parent: *//p' -e 's/^deps: *\[\(.*\)\]/\1/p' "$TD/$TICKET.md" | tr ',' ' '); do
+      [[ -f "$TD/$id.md" ]] && cp "$TD/$id.md" "$BRIEF/tickets/"
+    done
+    {
+      echo "Implement tk ticket $TICKET. Run \`tk show $TICKET\` first and treat it as the source of truth."
+      echo "The tickets are in ~/$bdir/tickets (TICKETS_DIR is set to it; if tk cannot find the ticket, export TICKETS_DIR=~/$bdir/tickets)."
+      [[ -n "$NOTES" ]] && { echo; cat "$NOTES"; }
+      echo
+      echo "Nobody is at this keyboard: never ask. A blocker goes into your report, then stop."
+      echo "Never push, merge or close the ticket. When done, write your completion report to ~/$bdir/HANDBACK.md, end it with HANDBACK-READY on its own line, and stop."
+    } > "$BRIEF/PROMPT.md"
+    [[ "$KIND" == claude && -z "$AGENT" ]] && AGENT="nah:nah-developer"
+  fi
   [[ -f "$BRIEF/PROMPT.md" ]] || die "$BRIEF/PROMPT.md is missing (the developer's whole brief, ending with: write HANDBACK.md in this folder and stop)"
   git rev-parse --verify -q "$BASE^{commit}" >/dev/null || die "unknown base $BASE"
-  url="ssh://$SSHH/${REPO#/}"; wt="~/nah-wt/$name"; bdir="nah-wt/$name-brief"
+  url="ssh://$SSHH/${REPO#/}"; wt="~/nah-wt/$name"
   run git push -q "$url" "$(git rev-parse "$BASE"):refs/heads/nah/base-$name"
   run ssh "$SSHH" "mkdir -p ~/nah-wt && rm -rf ~/$bdir"
   run scp -q -r "$BRIEF" "$SSHH:$bdir"
@@ -86,12 +113,15 @@ start)
   pane=$(jget pane_id <<<"$out"); ws=$(jget workspace_id <<<"$out")
   [[ -n "$DRY" ]] && { echo "$out"; pane=DRY ws=DRY; }
   [[ -n "$pane" ]] || die "worktree create gave no pane: $out"
-  args=(); [[ -n "$MODEL" ]] && args+=(--model "$MODEL")
+  # the agent inherits the pane shell's environment: point tk at the copied tickets before it starts
+  [[ -n "$TICKET" ]] && { run h pane run "$pane" "export TICKETS_DIR=~/$bdir/tickets" >/dev/null; [[ -n "$DRY" ]] || sleep 1; }
+  args=(); [[ -n "$AGENT" ]] && args+=(--agent "$AGENT"); [[ -n "$MODEL" ]] && args+=(--model "$MODEL")
   [[ -n "$SKIP" && "$KIND" == claude ]] && args+=(--dangerously-skip-permissions)
   run h agent start "$name" --kind "$KIND" --pane "$pane" -- ${args[@]+"${args[@]}"} >/dev/null 2>&1 || true
   [[ -n "$DRY" ]] || clear_dialogs
   [[ -n "$DRY" ]] || h agent wait "$name" --until idle --timeout 60000 >/dev/null || die "agent $name is not ready: herdr --machine $MACHINE agent read $name"
-  msg="Read ~/$bdir/PROMPT.md and do exactly what it says, end to end, without stopping to ask: nobody is at this keyboard. When done, write ~/$bdir/HANDBACK.md and stop."
+  if [[ -n "$TICKET" ]]; then msg="$(cat "$BRIEF/PROMPT.md")"; rm -rf "$BRIEF"
+  else msg="Read ~/$bdir/PROMPT.md and do exactly what it says, end to end, without stopping to ask: nobody is at this keyboard. When done, write ~/$bdir/HANDBACK.md and stop."; fi
   if [[ -n "$DRY" ]]; then run h agent prompt "$name" "$msg"; else send "$msg"; fi
   mkdir -p "$STATE"
   [[ -n "$DRY" ]] || printf 'MACHINE=%q\nSSHH=%q\nREPO=%q\nBRANCH=%q\nWS=%q\nBDIR=%q\n' "$MACHINE" "$SSHH" "$REPO" "$BRANCH" "$ws" "$bdir" > "$envf"
