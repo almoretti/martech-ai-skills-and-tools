@@ -170,6 +170,32 @@ When the user asks only for a review: skip orientation and planning, run the rev
 3. Other repositories: remove tickets created for this workflow once closed: check `tk dep tree <id>` or `grep -r '<id>' .tickets/` for dangling references, then `rm .tickets/<id>.md`; verify no session-created `.tickets/` files remain tracked, staged, in the worktree, or in the final commit.
 4. Commits and PRs happen when the user asks.
 
+## Developers on other machines (Herdr, optional)
+
+When the user runs Herdr with more than one saved machine (`herdr machine list`), developers can run on another machine,
+so builds and browser tests use its memory and more tickets run in parallel. The user chooses this; ask before the
+first remote dispatch, and check the other machine's free memory before each one.
+
+- Needs: a Herdr saved machine with API forwarding, ssh to it from here, a clone of the repository there, the agent CLI
+  signed in there. The tickets stay here; the developer gets the ticket as files in its brief.
+- `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/remote-dev.sh start <name> --machine <herdr machine> --ssh <user@host>
+  --repo <clone path there> --base <ref> --branch <branch> --brief <folder>` pushes the base, copies the brief, creates a
+  Herdr worktree and workspace there (`~/nah-wt/<name>`), starts the agent (`--kind claude|codex|pi`, `--model`) and
+  prompts it. The brief folder holds `PROMPT.md`: the dispatch text, the ticket (`tk show` output), the repository's
+  rules that apply, the validation to run, and "write HANDBACK.md in this folder and stop; never push". Nobody is at
+  that keyboard, so the brief must answer every question in advance. `--skip-permissions` starts Claude without
+  permission prompts: only when the user chose it.
+- **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
+  developer settles: `done`, `idle` or `blocked`. Never poll folders. On `blocked`, read the pane
+  (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
+- `remote-dev.sh report <name>` prints HANDBACK.md (the durable report; a long final message scrolls out of the pane).
+  `remote-dev.sh fetch <name>` brings the branch here; then the hand-back is judged exactly as a local one (lean
+  pass, corrections, review). A correction round is a new `herdr --machine <m> agent prompt <name> ...` to the same
+  session, then `wait` again.
+- `remote-dev.sh close <name>` when the ticket is merged: ends the session, removes the worktree and its workspace.
+  Never touch the user's own workspaces on that machine.
+- One developer per worktree still holds; one full gate per machine.
+
 ## Running the reviewer through Codex
 
 `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh <role> [--model id] [--cwd dir] [--out file] [--timeout secs] [--fresh] [--no-fallback] "<task>"`

@@ -28,6 +28,7 @@ six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:
 | Role | Runs as | Model (edit here) |
 |---|---|---|
 | developer | Agent `nah:nah-developer` | plugin `agents/nah-developer.md` → `model:` |
+| developer on another machine (optional, Herdr) | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/remote-dev.sh start\|wait\|report\|fetch\|close` (a Claude, Codex or pi session in a Herdr worktree on a saved Herdr machine, for more memory or more parallel developers; PROTOCOL "Developers on other machines") | `--kind`, `--model` |
 | code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer` (GPT through the Codex CLI. Inside Herdr: a real Codex session in its own background tab, named `nah-code-reviewer` and kept, so a re-review or a question goes to the same session with its memory, and the user can talk to it; outside Herdr: one headless run. Falls back to `pi-role.sh` when codex is missing, not signed in or leaves no report) | Codex CLI default, or `--model`; the pi back-up: `roles/models.env` |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
 | diff-summarizer, repo-scout, test-runner | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` | plugin `agents/*.md` |
