@@ -99,7 +99,7 @@ start)
       [[ -n "$NOTES" ]] && { echo; cat "$NOTES"; }
       echo
       echo "Nobody is at this keyboard: never ask. A blocker goes into your report, then stop."
-      echo "Never push, merge or close the ticket. When done, write your completion report to ~/$bdir/HANDBACK.md, end it with HANDBACK-READY on its own line, and stop."
+      echo "Commit your work on your branch (small commits naming the ticket id): the architect fetches the branch, so uncommitted work is not handed back. Never push, merge or close the ticket. When done, write your completion report to ~/$bdir/HANDBACK.md, end it with HANDBACK-READY on its own line, and stop."
     } > "$BRIEF/PROMPT.md"
     [[ "$KIND" == claude && -z "$AGENT" ]] && AGENT="nah:nah-developer"
   fi
