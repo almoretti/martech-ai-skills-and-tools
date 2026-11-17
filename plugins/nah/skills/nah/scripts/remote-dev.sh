@@ -49,7 +49,8 @@ while [[ $# -gt 0 ]]; do case "$1" in
 envf="$STATE/$name.env"
 load() { [[ -f "$envf" ]] || die "no remote developer named $name ($envf)"; source "$envf"; }
 h() { herdr --machine "$MACHINE" "$@"; }
-ready_count() { ssh "$SSHH" "grep -c '^HANDBACK-READY' ~/$BDIR/HANDBACK.md 2>/dev/null || echo 0" 2>/dev/null | tail -1; }
+# The report's state: its checksum when it ends with HANDBACK-READY, else 0. A new report (appended or rewritten) changes it.
+ready_count() { ssh "$SSHH" "f=~/$BDIR/HANDBACK.md; tail -n1 \$f 2>/dev/null | grep -q '^HANDBACK-READY' && cksum < \$f | cut -d' ' -f1 || echo 0" 2>/dev/null | tail -1; }
 # Answer the known questions that sit in front of the input box (see the header); up to three in a row.
 clear_dialogs() {
   local i screen
@@ -140,7 +141,7 @@ wait)
   while :; do
     st=$(h agent wait "$name" ${t[@]+"${t[@]}"} 2>&1 | grep -o '"agent_status":"[a-z]*"' | head -1)
     [[ "$st" == *blocked* ]] && { echo "$st: herdr --machine $MACHINE agent read $name"; exit 0; }
-    [[ "$(ready_count)" -gt "${READY0:-0}" ]] && { echo "$st"; echo "HANDBACK ready: remote-dev.sh report $name"; exit 0; }
+    c=$(ready_count); [[ "$c" != 0 && "$c" != "${READY0:-0}" ]] && { echo "$st"; echo "HANDBACK ready: remote-dev.sh report $name"; exit 0; }
     [[ -n "$TIMEOUT" ]] && { echo "$st, no new HANDBACK-READY yet (timeout)"; exit 0; }
     [[ -n "$said" ]] || { echo "$st without a new HANDBACK-READY (background work?); still waiting"; said=1; }
     sleep 60
