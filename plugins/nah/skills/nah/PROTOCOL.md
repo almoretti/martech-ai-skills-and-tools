@@ -190,6 +190,15 @@ first remote dispatch, and check the other machine's free memory before each one
 - **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
   developer has written a new HANDBACK-READY line or is `blocked`; an agent idle on its own background work (a test loop) is not finished, so the script keeps waiting. Never poll folders. On `blocked`, read the pane
   (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
+- **Status check, before every status you give the user and whenever a developer has been quiet for longer than its
+  last round took**: a notification that did not arrive is not "still working". Look, do not assume:
+  `herdr --machine <m> agent list` (idle or working), the time of each `~/nah-wt/<name>-brief/HANDBACK.md` against the
+  time of your last prompt to that developer, and the last commit on its branch. An idle developer with a report newer
+  than your prompt has handed back: fetch and judge it now. Check too that this session still has the Herdr name the
+  developers report to (`herdr agent list` here; `herdr agent rename <pane> <name>` restores it): a model switch or a
+  restart can clear it, and then no report reaches you. Never tell the user a developer is working without this check.
+- **The developer's model**: pass the full model id to `start` (`--model claude-opus-5-5`, not an alias such as
+  `opus`, which another machine may resolve differently), and confirm it in the session after the start.
 - `remote-dev.sh report <name>` prints HANDBACK.md (the durable report; a long final message scrolls out of the pane).
   `remote-dev.sh fetch <name>` brings the branch here; then the hand-back is judged exactly as a local one (lean
   pass, corrections, review). A correction round is `remote-dev.sh prompt <name> "<text>"` to the same session, then
