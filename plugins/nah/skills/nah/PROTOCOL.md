@@ -133,6 +133,18 @@ Check `git diff --stat` against the base at every hand-back and before packaging
   stricter line, never a looser one.
 - Merges happen in a detached temporary worktree (`git worktree add --detach`, merge, push `HEAD:main`); the main
   checkout only fast-forwards and runs no gate, so files another session left there stay out of every merge.
+- **The integrator** (`nah:nah-integrator`, optional): when the project has a `.nah/integrator.md` (its merge worktree,
+  landing branch, check commands per platform, remote runner, known-flaky list, mirrors, trailers and machine rules;
+  example: `${CLAUDE_PLUGIN_ROOT}/examples/integrator.example.md`), the architect may hand a reviewed stack to it
+  instead of merging itself. It merges, runs the project's one check on each platform, judges any failure by its
+  fixed table, and lands (push, mirrors, and a note and `tk close` on each ticket the dispatch lists) or stops with
+  the evidence. The architect still decides, and writes in the dispatch: which branches merge and in what order, the
+  resolution of each conflict it expects, and which tickets land with the stack; and, on a stop, what it means (a fix
+  ticket, a reorder, a known-flaky entry). A small fix at merge time is the architect's written instruction in the dispatch, never the integrator's
+  idea; an uncovered conflict or a failure the table does not clear comes back as a stop. Its mechanical checks are
+  `scripts/integrator.sh check-clean|markers|land` (`land --dry-run` checks without pushing). Dispatch text:
+  `Integrate stack <label>: <branch> (<id>: <title>), …; conflicts: <file>: <resolution>; …; script: <absolute path of
+  integrator.sh>.` One integrator per merge worktree; its full check is the machine's one full gate.
 - When more than one session works a repository, `docs/LANES.md` names each session's branch, paths and ports, one
   line each, updated at dispatch; a session touches nothing in another lane. In a backlog repository with lanes, a
   session claims a lane (or one item in it) on its line, so parallel sessions are split by area first. When the

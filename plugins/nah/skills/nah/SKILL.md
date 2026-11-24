@@ -12,8 +12,8 @@ developer. Full rules with the verbatim gates: `${CLAUDE_PLUGIN_ROOT}/skills/nah
 ## Plugin paths and names
 
 This skill ships in the `nah` plugin (NAH, Not Another Harness). Claude Code namespaces plugin agents as `<plugin>:<agent>`, so the
-six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:nah-oracle`,
-`nah:nah-diff-summarizer`, `nah:nah-repo-scout` and `nah:nah-test-runner`. Bundled files, as absolute paths:
+seven subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:nah-oracle`,
+`nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` and `nah:nah-integrator`. Bundled files, as absolute paths:
 
 - Skill dir: `${CLAUDE_PLUGIN_ROOT}/skills/nah` (`PROTOCOL.md`, `roles/`, `scripts/`). Relative `scripts/…` and `roles/…` paths in
   PROTOCOL.md mean this directory.
@@ -32,6 +32,7 @@ six subagents are dispatched as `nah:nah-developer`, `nah:nah-contrarian`, `nah:
 | code-reviewer | `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer` (GPT through the Codex CLI. Inside Herdr: a real Codex session in its own background tab, named `nah-code-reviewer` and kept, so a re-review or a question goes to the same session with its memory, and the user can talk to it; outside Herdr: one headless run. Falls back to `pi-role.sh` when codex is missing, not signed in or leaves no report) | Codex CLI default, or `--model`; the pi back-up: `roles/models.env` |
 | contrarian, oracle | Agents `nah:nah-contrarian`, `nah:nah-oracle` | plugin `agents/*.md` |
 | diff-summarizer, repo-scout, test-runner | Agents `nah:nah-diff-summarizer`, `nah:nah-repo-scout`, `nah:nah-test-runner` | plugin `agents/*.md` |
+| integrator (optional) | Agent `nah:nah-integrator`, with the project's `.nah/integrator.md` and `scripts/integrator.sh` (merges a reviewed stack, runs the one check per platform, lands or stops; PROTOCOL "Gates and merges") | plugin `agents/nah-integrator.md` → `model:` |
 
 The reviewer is intentionally a different vendor from the developer. Keep it that way unless the user
 says otherwise. Any role can also be run through pi: `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/pi-role.sh <role> --model provider/id "task"`.
@@ -58,7 +59,8 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final revi
 5. **Implement**: for each `tk ready` ticket, `tk start <id>`, then dispatch **one** ticket to `nah:nah-developer`
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`
    plus any ticket-specific validation notes. The ticket is done when every acceptance criterion shows in the
-   diff, not only in the report; otherwise send focused corrections. `tk close <id>` then. The reviewer mid-way
+   diff, not only in the report; otherwise send focused corrections. `tk close <id>` then; a ticket that lands through
+   `nah:nah-integrator` is noted and closed by it when its stack lands. The reviewer mid-way
    only for high-risk tickets. The final-validation ticket goes to `nah:nah-test-runner`
    (PROTOCOL "Validation planning").
 5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
@@ -68,6 +70,8 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final revi
    same session (a second call with the same role), and end the session with `codex-role.sh code-reviewer --close` when
    the review is settled. Weigh the
    findings yourself, push back on weak ones, dispatch fixes to `nah:nah-developer`, re-review when the fix is material.
+6b. **Merge**: in the detached merge worktree, yourself or, when the project has `.nah/integrator.md`, through
+   `nah:nah-integrator`; the decisions stay yours, written in its dispatch (PROTOCOL "Gates and merges").
 7. **Report**: implemented work, tradeoffs, validation run, remaining risks, digested in your own words.
    When the work ships as a PR, package it with `${CLAUDE_PLUGIN_ROOT}/skills/nah/PR.md`; every PR body ends with the NAH footer line.
 8. **Cleanup**: after review and fixes. In a **backlog repository** (`docs/backlog/` exists) tickets live in
@@ -106,7 +110,8 @@ or `tk add-note`. If a confirmed objection is overridden, say so explicitly to t
 ## Hard rules
 
 - Source edits belong to the developer, except a small fix (PROTOCOL "Gates and merges": size the gate and the
-  reviews to the change). One ticket per dispatch; one writer per cwd at a time.
+  reviews to the change); a small fix at merge time may be made by `nah:nah-integrator`, only as you wrote it in its
+  dispatch. One ticket per dispatch; one writer per cwd at a time.
 - A mandatory challenge trigger is a rule, not a judgement call.
 - Pre-existing worktree and index changes are human-owned: ask the user instead of stashing, restoring, resetting,
   cleaning or force-checking-out.
