@@ -190,6 +190,20 @@ first remote dispatch, and check the other machine's free memory before each one
 
 - Needs: a Herdr saved machine with API forwarding, ssh to it from here, a clone of the repository there, the agent CLI
   signed in there. The tickets stay here; the developer gets the ticket as files in its brief.
+- **Before the first start on a machine**: `remote-dev.sh doctor --machine <m> --ssh <user@host> --repo <clone path
+  there> [--back <machine>]` checks, read-only, one line each (`ok` / `warn` / `MISSING: what to do`): ssh without a
+  prompt, the Herdr machine and a compatible server, git, node and the package manager at the versions the
+  repository's `package.json` asks, the clone, `claude` with the nah plugin and its dependencies installed and enabled,
+  `tk` on the PATH, executable and without CRLF line endings, free disk and memory, and (`--back`) the saved Herdr
+  machine there that leads back here. It exits 0 only when nothing is MISSING, and installs nothing: the user fixes
+  what it lists. `tk` goes on that machine through the plugin's `scripts/install.sh` (a link to the plugin's copy); a
+  `tk` copied by hand from a Windows checkout has CRLF line endings and fails with `env: bash\r`: strip them
+  (`tr -d '\r'`) when copying.
+- **Folder trust**: start agents only in a folder that is already trusted or that the script created for them. `start`
+  checks that the agent's pane is in the worktree it created before it starts the agent (over `--machine` the folder
+  of a new workspace may not apply). The one prompt the script answers is Claude Code's folder-trust dialog, at start
+  only, for the worktree it just created, by sending Down and Enter ("Yes, I trust this folder"); every other trust,
+  permission or other dialog is left to the user: nobody answers it on the user's behalf, and the architect reports it.
 - `${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/remote-dev.sh start <name> --machine <herdr machine> --ssh <user@host>
   --repo <clone path there> --base <ref> --branch <branch> --ticket <id> [--notes <file>]` pushes the base, creates a
   Herdr worktree and workspace there (`~/nah-wt/<name>`), copies the ticket with its parent and dependencies, and starts
@@ -198,14 +212,24 @@ first remote dispatch, and check the other machine's free memory before each one
   notes file for ticket-specific validation. Nothing is hand-written: the ticket is the brief. The script adds only
   "nobody is at this keyboard; never push, merge or close; write the report to HANDBACK.md". `--kind codex|pi` and
   `--brief <folder with PROMPT.md>` remain for other agents and for work that is not a ticket. `--skip-permissions` starts Claude without
-  permission prompts: only when the user chose it.
+  permission prompts: only when the user chose it. `start` first runs the cheap part of `doctor` (ssh, the clone, the
+  plugin, the name, the worktree path, the brief folder and the branch still free) and creates nothing when one is
+  MISSING; when a later step fails, Ctrl-C included, it removes what that run created and nothing else (workspace,
+  worktree, the branch while it has no commits beyond the base, the pushed base ref, the brief, the state file) and
+  exits non-zero.
 - **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
   developer has written a new HANDBACK-READY line or is `blocked`; an agent idle on its own background work (a test loop) is not finished, so the script keeps waiting. Never poll folders. On `blocked`, read the pane
   (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
 - **Status check, before every status you give the user and whenever a developer has been quiet for longer than its
   last round took**: a notification that did not arrive is not "still working". Look, do not assume:
-  `herdr --machine <m> agent list` (idle or working), the time of each `~/nah-wt/<name>-brief/HANDBACK.md` against the
-  time of your last prompt to that developer, and the last commit on its branch. An idle developer with a report newer
+  `remote-dev.sh status` lists every open developer in one call, hand-backs first: machine, agent state (working,
+  idle, blocked, done, or gone), the time and checksum of its HANDBACK.md, READY when it ends with HANDBACK-READY,
+  NEW when it changed since the last `status`, and "placeholder left" when it still holds the project's template
+  marker (`--placeholder <text>` or `NAH_HANDBACK_PLACEHOLDER`). The plain form marks what it showed as seen;
+  `--json` (for scripts) never does, so a monitoring script cannot hide a new hand-back from your next look. A dead
+  machine reads "unreachable" after a timeout instead of hanging the call. A developer may write
+  HANDBACK.md before its last check ends: a READY report from an agent still working is judged once it is idle (the
+  checksum shows a rewrite). Then the last commit on its branch. An idle developer with a report newer
   than your prompt has handed back: fetch and judge it now. Check too that this session still has the Herdr name the
   developers report to (`herdr agent list` here; `herdr agent rename <pane> <name>` restores it): a model switch or a
   restart can clear it, and then no report reaches you. Never tell the user a developer is working without this check.
@@ -214,8 +238,8 @@ first remote dispatch, and check the other machine's free memory before each one
 - `remote-dev.sh report <name>` prints HANDBACK.md (the durable report; a long final message scrolls out of the pane).
   `remote-dev.sh fetch <name>` brings the branch here; then the hand-back is judged exactly as a local one (lean
   pass, corrections, review). A correction round is `remote-dev.sh prompt <name> "<text>"` to the same session, then
-  `wait` again. Every prompt first answers the agent's own "trust this folder" and "compact earlier?" questions, which
-  otherwise swallow it; anything else blocking is left for you to read.
+  `wait` again. A prompt never answers a dialog: when the agent does not take it, the script stops and prints what is
+  on its screen, for you to read and to decide or ask the user.
 - `remote-dev.sh close <name>` when the ticket is merged: ends the session, removes the worktree and its workspace.
   Never touch the user's own workspaces on that machine.
 - One developer per worktree still holds; one full gate per machine.

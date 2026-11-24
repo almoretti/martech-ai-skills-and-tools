@@ -1,0 +1,2 @@
+# The scripts run on macOS and Linux too: a Windows checkout must not turn them into CRLF ("env: bash\r").
+skills/nah/scripts/* text eol=lf
