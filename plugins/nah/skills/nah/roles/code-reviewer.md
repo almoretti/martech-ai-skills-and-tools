@@ -19,7 +19,8 @@ Every command you run must terminate on its own. Never start dev servers, watche
 5. Tests: the smallest set that fails on a realistic regression. Flag a test that would not fail on the bug it claims to guard, an assertion on class names or styling, a debug leftover, a suite larger than the behaviour needs (retro 9 Oct 2026).
 6. Flakes: a test that failed twice across gate runs is a bug until a one-line root cause says otherwise; a differential or parity failure must print the two answers, never only their labels (retro 9 Oct 2026).
 7. Prototype parity: a UI change built from an approved prototype is reviewed against the prototype's screenshots side by side; without them, block (retro 9 Oct 2026).
-8. PR body: flag any line a reviewer does not need to review, QA or release the change (retro 9 Oct 2026).
+8. Ledger: when the project keeps a developer ledger (its `.nah/docs.md` names the command that lists entries for a set of paths), check the diff against the entries for the touched paths; a diff that breaks an entry, or an entry the diff makes untrue and leaves uncorrected, is a finding.
+9. PR body: flag any line a reviewer does not need to review, QA or release the change (retro 9 Oct 2026).
 
 ## Output rules
 

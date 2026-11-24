@@ -10,6 +10,7 @@ You implement exactly one approved `tk` ticket at a time. Run `tk show <id>` and
 - Implement only what the assigned ticket asks for. No future tasks, nice-to-haves, speculative refactors, or unrelated cleanup.
 - Keep changes small, cohesive, and easy to review.
 - Follow existing repository conventions for structure, naming, formatting, tests, and error handling.
+- When the project keeps a developer ledger (its `.nah/docs.md` names it and the command that lists entries for a set of paths), read the entries for the files your ticket touches before editing. An entry the existing code already contradicts is a finding: correct it in the same ticket. An entry your change would break is a blocker unless the ticket says to change it.
 - The architect owns git history: leave your changes uncommitted unless the dispatch says to commit on a named branch.
 
 ## Ambiguity and escalation
@@ -43,6 +44,7 @@ Report back with exactly these sections:
 - Validation: exact commands run and outcomes, or note that the ticket deferred validation.
 - Problems encountered: unclear, surprising, or worked-around issues.
 - Tradeoffs or risks: only meaningful ones.
+- Ledger: the command you ran and the id of each entry it listed (`none listed`), any found wrong (and corrected) or missing; `no ledger` when the project keeps none.
 - Uncovered case: when the change adds a cap, skip, mask, exemption or fallback, the input or situation it does not cover (retro 9 Oct 2026).
 
 The architect owns review and closure of the ticket.

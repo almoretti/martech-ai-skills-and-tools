@@ -98,12 +98,12 @@ The ticket closes when every `runner` and `architect` step passed and each `user
 For each ready ticket:
 
 1. `tk ready` to pick the next dependency-unblocked ticket; `tk start <id>`.
-2. Dispatch one ticket to `nah:nah-developer`. Task text: `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.` In a backlog repository the text starts with `export TICKETS_DIR=docs/backlog/tickets`. Add ticket-specific validation constraints or sequencing.
+2. Dispatch one ticket to `nah:nah-developer`. Task text: `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.` In a backlog repository the text starts with `export TICKETS_DIR=docs/backlog/tickets`. Add ticket-specific validation constraints or sequencing; with a developer ledger, the ledger command for the ticket's files ("Docs after a landing").
 3. The developer cannot ask questions mid-run. If its report is a blocker, answer it and re-dispatch with the decision included.
 4. The ticket is met when every acceptance criterion shows in the diff; read the diff yourself when the report is thin.
 5. Send focused corrections back as a new dispatch when a criterion is missing.
 5b. Run the lean pass (below), then send its items with your corrections in one dispatch.
-6. `tk close <id>` when the ticket's intent is met. Record decisions with `tk add-note`.
+6. `tk close <id>` when the ticket's intent is met, and not while its notes hold a fact of a ledger kind that is in neither the ledger nor a new ticket. Record decisions with `tk add-note`.
 7. `codex-role.sh code-reviewer` as a checkpoint for high-risk tickets.
 
 One `nah:nah-developer` dispatch per cwd at a time; read-only roles run in parallel.
@@ -144,7 +144,8 @@ Check `git diff --stat` against the base at every hand-back and before packaging
   idea; an uncovered conflict or a failure the table does not clear comes back as a stop. Its mechanical checks are
   `scripts/integrator.sh check-clean|markers|land` (`land --dry-run` checks without pushing). Dispatch text:
   `Integrate stack <label>: <branch> (<id>: <title>), …; conflicts: <file>: <resolution>; …; script: <absolute path of
-  integrator.sh>.` One integrator per merge worktree; its full check is the machine's one full gate.
+  integrator.sh>.` One integrator per merge worktree; its full check is the machine's one full gate. Its report
+  ends with `docs owed: yes|no, tickets: …` (see "Docs after a landing").
 - When more than one session works a repository, `docs/LANES.md` names each session's branch, paths and ports, one
   line each, updated at dispatch; a session touches nothing in another lane. In a backlog repository with lanes, a
   session claims a lane (or one item in it) on its line, so parallel sessions are split by area first. When the
@@ -152,6 +153,27 @@ Check `git diff --stat` against the base at every hand-back and before packaging
   dev-contribution: `dev-contribution/<repo>/LANES.md`), each extra session works in its own git worktree
   (`<clone>-<ticket>`), never in another session's checkout, and a shared notes file is edited per lane: only your own
   ticket's lines, re-read right before writing.
+
+## Docs after a landing
+
+- **The documenter** (`nah:nah-documenter`, optional): when the project has a `.nah/docs.md` (example:
+  `${CLAUDE_PLUGIN_ROOT}/examples/docs.example.md`), the architect dispatches it after every landed stack
+  that changed something a person or an operator meets: the integrator's `docs owed: yes` line names the tickets (a
+  stack merged by the architect: the architect writes that line itself). Once more at the end of a wave, with
+  `end of wave: yes`, for the index, the guides and the change summary.
+- It has two outputs: the docs a person or an operator reads, and the project's **developer ledger** (when
+  `.nah/docs.md` names one: where it lives, its entry format, the command that lists the entries for a set of
+  paths): the facts an agent needs before touching an area (invariants, traps, decisions with their reason, accepted
+  risks, known limits, where something is decided), each tied to its paths and carrying how to check it.
+  Without a ledger it does the docs half and says so.
+- The ledger is used, not only kept: implementation loop steps 2 and 6, and the developer and code-reviewer roles.
+- It writes only docs and ledger entries, ties every added or changed sentence to a `file:line` at the landed tip in its hand-back's
+  claim table, and turns every doubt into a question. Its diff gets the one review and no lean pass, by a reviewer
+  who checks each claim against the code at the landed tip, not against the hand-back; then it merges in the next
+  stack, or alone at the end of a wave. Docs never block a landing.
+- It needs no build machine: it runs no build or test suite, only the docs checks.
+- Dispatch text: `Document stack <label>: landed tip <ref>; tickets: <id> (<title>), …; hand-backs: <paths or none>;
+  end of wave: yes|no.`
 
 ## Final review
 
