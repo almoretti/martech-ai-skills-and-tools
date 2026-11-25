@@ -3,7 +3,7 @@
 #
 # The other machine is a Herdr saved machine (`herdr machine list`) that has a clone of the repository and the agent
 # CLI signed in. The developer gets its own Herdr worktree and workspace there, a brief folder with PROMPT.md, and
-# writes HANDBACK.md into that folder when it is done. The architect is told the Herdr way (`agent wait`), then
+# writes HANDBACK.md into that folder when it is done. The architect is told when its agent stops working, then
 # fetches the branch back over ssh and reviews it like any hand-back. The developer never pushes.
 #
 # Usage:
@@ -30,12 +30,18 @@
 #                 every open developer (or the named ones), one line each, hand-backs first: machine, agent state
 #                 (working / idle / blocked / done, or gone), HANDBACK.md time and checksum, READY when it ends with
 #                 HANDBACK-READY, NEW when it changed since the last status, and "placeholder left" when it still
-#                 holds the project's template marker (--placeholder or NAH_HANDBACK_PLACEHOLDER). The plain form
+#                 holds the project's template marker (--placeholder or NAH_HANDBACK_PLACEHOLDER), "READY but agent
+#                 still working: do not take in", and "done, no hand-back". The plain form
 #                 marks what it showed as seen; --json never does, so a monitoring script does not hide a new
 #                 hand-back from the next plain status. A dead machine costs a timeout and reads "unreachable".
 #                 Always exits 0.
 #   remote-dev.sh prompt <name> <text...>        send a follow-up (a correction round) to the same session
-#   remote-dev.sh wait <name> [--timeout ms]     block until the developer settles (done, idle or blocked)
+#   remote-dev.sh wait <name>... [--timeout s] [--grace s]   block until the first named developer has finished: its
+#                 agent is not working AND HANDBACK.md ends with HANDBACK-READY AND no placeholder is left. The agent's
+#                 state and the READY report together are the signal: a report alone is early, an idle agent alone
+#                 may be waiting on its own test run. Polls every minute; one line: developer, state, HANDBACK.md.
+#                 Exit 0 finished (or gone), 2 blocked (it waits at a prompt: look), 3 not working for --grace
+#                 (default 600) without a finished hand-back (look), 124 still working at the timeout.
 #   remote-dev.sh report <name>                  print HANDBACK.md (or the pane's recent output when there is none)
 #   remote-dev.sh fetch <name>                   fetch its branch into this clone as <branch>
 #   remote-dev.sh close <name>                   end the session and remove its worktree and workspace
@@ -44,8 +50,7 @@
 # --skip-permissions starts Claude with --dangerously-skip-permissions: only when the user chose it for this run.
 # The one prompt the script answers: at start only, Claude Code's folder-trust dialog for the worktree that start has
 # just created and checked the pane is in, by sending Down and Enter ("Yes, I trust this folder"). Every other dialog,
-# trust or permission prompt is left to the user: prompt stops and prints what is on screen. Wait for "settled",
-# never --until done: a seen agent reports idle.
+# trust or permission prompt is left to the user: prompt stops and prints what is on screen.
 set -euo pipefail
 export MSYS_NO_PATHCONV=1   # Git Bash on Windows would rewrite the remote's /Users/... paths
 STATE="${NAH_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/nah}/remote"
@@ -57,17 +62,17 @@ cmd="${1:-}"; shift || die "usage: see the header of $0"
 name= NAMES=()
 case "$cmd" in
   doctor) ;;
-  status) while [[ $# -gt 0 && "$1" != --* ]]; do NAMES+=("$1"); shift; done;;
+  status|wait) while [[ $# -gt 0 && "$1" != --* ]]; do NAMES+=("$1"); shift; done;;
   *) name="${1:-}"; shift || die "usage: see the header of $0"
      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,31}$ ]] || die "name must match [a-z][a-z0-9_-]{0,31}";;
 esac
 TEXT=; [[ "$cmd" == prompt ]] && { TEXT="$*"; [[ -n "$TEXT" ]] || die "prompt needs the text"; set --; }
-MACHINE= SSHH= REPO= BASE= BRANCH= BRIEF= KIND=claude MODEL= SKIP= DRY= TIMEOUT= TICKET= NOTES= AGENT= BACK= JSON=
+MACHINE= SSHH= REPO= BASE= BRANCH= BRIEF= KIND=claude MODEL= SKIP= DRY= TIMEOUT= TICKET= NOTES= AGENT= BACK= JSON= GRACE=600
 PLACEHOLDER="${NAH_HANDBACK_PLACEHOLDER:-}"
 while [[ $# -gt 0 ]]; do case "$1" in
   --machine) MACHINE=$2; shift 2;; --ssh) SSHH=$2; shift 2;; --repo) REPO=$2; shift 2;;
   --base) BASE=$2; shift 2;; --branch) BRANCH=$2; shift 2;; --brief) BRIEF=$2; shift 2;;
-  --kind) KIND=$2; shift 2;; --model) MODEL=$2; shift 2;; --timeout) TIMEOUT=$2; shift 2;;
+  --kind) KIND=$2; shift 2;; --model) MODEL=$2; shift 2;; --timeout) TIMEOUT=$2; shift 2;; --grace) GRACE=$2; shift 2;;
   --ticket) TICKET=$2; shift 2;; --notes) NOTES=$2; shift 2;; --agent) AGENT=$2; shift 2;;
   --back) BACK=$2; shift 2;; --placeholder) PLACEHOLDER=$2; shift 2;; --json) JSON=1; shift;;
   --skip-permissions) SKIP=1; shift;; --dry-run) DRY=1; shift;;
@@ -75,8 +80,6 @@ while [[ $# -gt 0 ]]; do case "$1" in
 envf="$STATE/$name.env"
 load() { [[ -f "$envf" ]] || die "no remote developer named $name ($envf)"; source "$envf"; }
 h() { herdr --machine "$MACHINE" "$@"; }
-# The report's state: its checksum when it ends with HANDBACK-READY, else 0. A new report (appended or rewritten) changes it.
-ready_count() { ssh "$SSHH" "f=~/$BDIR/HANDBACK.md; tail -n1 \$f 2>/dev/null | grep -q '^HANDBACK-READY' && cksum < \$f | cut -d' ' -f1 || echo 0" 2>/dev/null | tail -1; }
 screen() { h agent read "$name" --source visible --lines 40 2>/dev/null || true; }
 # Claude Code's folder-trust dialog, matched by its own option lines: "No, exit" (or "No, continue without these
 # permissions") first, with the cursor on it, and "Yes, I trust this folder" second (read in Claude Code 2.1.331).
@@ -243,9 +246,10 @@ status_one() (
   else
     case $hb in
       present) line="HANDBACK.md $(fmt_time "$mt") cksum $ck$([[ $ready == true ]] && echo " READY")$([[ $new == true ]] && echo " NEW since last status")$([[ $ph == true ]] && echo " placeholder left")";;
-      none) line="no HANDBACK.md yet";;
+      none) line="no HANDBACK.md yet"; [[ $st == done ]] && line="no HANDBACK.md: done, no hand-back";;
       *) line="HANDBACK.md unknown: $SSHH unreachable";;
     esac
+    [[ $ready == true && $st == working ]] && line=${line/ READY/ READY but agent still working: do not take in}
     line=$(printf '%-14s %-10s agent=%-8s %s' "$n" "$MACHINE" "$st" "$line")
   fi
   printf '%s\t%s\t%s\n' "$rank" "$n" "$line"
@@ -346,21 +350,45 @@ start)
   echo "started $name on $MACHINE: workspace $ws, worktree $wt, branch $BRANCH, brief ~/$bdir"
   ;;
 prompt)
-  load; seen=$(ready_count); send "$TEXT"
-  sed -i.bak '/^READY0=/d' "$envf" && rm -f "$envf.bak"; echo "READY0=$seen" >> "$envf"
+  load; send "$TEXT"
   echo "prompted $name; remote-dev.sh wait $name"
   ;;
 wait)
-  # Settled is not finished: an agent that waits on its own background work (a test loop) reports idle. Wait until
-  # a new HANDBACK-READY line appears (counted against the last start or prompt) or the agent is blocked.
-  load; t=(); [[ -n "$TIMEOUT" ]] && t=(--timeout "$TIMEOUT"); said=
+  # The agent's state and the READY report together are the signal: a report alone is early (a developer writes it,
+  # READY line included, while its own test run still goes, and taking it in then stops that run), and an idle agent
+  # alone may be waiting on its own test run (settled is not finished). Not working without a finished report for
+  # --grace seconds in a row returns for a look.
+  [[ ${#NAMES[@]} -gt 0 ]] || die "wait needs a name"
+  [[ -z "$TIMEOUT" || "$TIMEOUT" =~ ^[0-9]+$ ]] || die "--timeout takes seconds"
+  [[ "$GRACE" =~ ^[0-9]+$ ]] || die "--grace takes seconds"
+  for n in "${NAMES[@]}"; do [[ -f "$STATE/$n.env" ]] || die "unknown developer $n: not open here (remote-dev.sh status)"; done
+  end=$(( ${TIMEOUT:-0} ? SECONDS + TIMEOUT : 0 )) since=()
+  for_g="${GRACE}s"; (( GRACE % 60 )) || for_g="$(( GRACE / 60 )) min"
   while :; do
-    st=$(h agent wait "$name" ${t[@]+"${t[@]}"} 2>&1 | grep -o '"agent_status":"[a-z]*"' | head -1)
-    [[ "$st" == *blocked* ]] && { echo "$st: herdr --machine $MACHINE agent read $name"; exit 0; }
-    c=$(ready_count); [[ "$c" != 0 && "$c" != "${READY0:-0}" ]] && { echo "$st"; echo "HANDBACK ready: remote-dev.sh report $name"; exit 0; }
-    [[ -n "$TIMEOUT" ]] && { echo "$st, no new HANDBACK-READY yet (timeout)"; exit 0; }
-    [[ -n "$said" ]] || { echo "$st without a new HANDBACK-READY (background work?); still waiting"; said=1; }
-    sleep 60
+    seen=
+    for i in "${!NAMES[@]}"; do
+      n=${NAMES[$i]}
+      j=$(JSON=1 status_one "$n" | cut -f3-); st=$(jget agent <<<"$j"); st=${st:-gone}; seen+=" $n=$st"
+      if [[ $st == working || $st == unreachable ]]; then since[$i]=; continue; fi   # unreachable says nothing about the agent
+      hb="no HANDBACK.md" why="no HANDBACK.md"
+      if [[ $(jget handback <<<"$j") == present ]]; then
+        hb="HANDBACK.md $(fmt_time "$(sed -n 's/.*"mtime":\([0-9]*\).*/\1/p' <<<"$j")")" why="not READY"
+        grep -q '"ready":true' <<<"$j" && { hb+=" READY"; why=; }
+        grep -q '"placeholder":true' <<<"$j" && why="placeholder left"
+      fi
+      [[ $st == blocked ]] && { echo "$n: agent=blocked, $hb: it waits at a prompt; look: herdr --machine $(jget machine <<<"$j") agent read $n"; exit 2; }
+      [[ $st == gone ]] && { echo "$n: agent=gone, $hb"; exit 0; }
+      [[ -n "$why" ]] || { echo "$n: agent=$st, $hb: finished"; exit 0; }
+      [[ -n "${since[$i]:-}" ]] || since[$i]=$SECONDS
+      if (( SECONDS - since[i] >= GRACE )); then
+        echo "$n: agent=$st for $for_g without a finished hand-back ($why): look: it may be waiting on its own background work"; exit 3
+      fi
+    done
+    step=60; (( GRACE >= step )) || step=$(( GRACE > 0 ? GRACE : 1 ))
+    left=$(( end - SECONDS ))
+    [[ $end == 0 || $left -gt 0 ]] || { echo "still working:$seen (timeout)"; exit 124; }
+    (( end == 0 || left > step )) || step=$left
+    sleep "$step"
   done
   ;;
 report)

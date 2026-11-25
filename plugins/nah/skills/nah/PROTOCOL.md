@@ -239,8 +239,12 @@ first remote dispatch, and check the other machine's free memory before each one
   MISSING; when a later step fails, Ctrl-C included, it removes what that run created and nothing else (workspace,
   worktree, the branch while it has no commits beyond the base, the pushed base ref, the brief, the state file) and
   exits non-zero.
-- **Being told**: `remote-dev.sh wait <name>` (Herdr's `agent wait`, run as a background command) returns when the
-  developer has written a new HANDBACK-READY line or is `blocked`; an agent idle on its own background work (a test loop) is not finished, so the script keeps waiting. Never poll folders. On `blocked`, read the pane
+- **Being told**: the agent's state AND the READY report together are the signal: a report alone is early, an idle
+  agent alone may be waiting on its own test run. `remote-dev.sh wait <name>... [--timeout <s>] [--grace <s>]` (run
+  as a background command) returns on the first named developer that has finished (agent not working, HANDBACK.md
+  READY, no placeholder left; exit 0) or is gone (exit 0) or `blocked` (exit 2); an agent not working for `--grace`
+  (default 10 min) without a finished report returns exit 3 for a look; at the timeout it exits 124 with "still
+  working", so a caller can loop. Check `status` before any status line. Never poll folders. On `blocked`, read the pane
   (`herdr --machine <m> agent read <name>`) and decide or ask the user before sending keys.
 - **Status check, before every status you give the user and whenever a developer has been quiet for longer than its
   last round took**: a notification that did not arrive is not "still working". Look, do not assume:
@@ -250,8 +254,8 @@ first remote dispatch, and check the other machine's free memory before each one
   marker (`--placeholder <text>` or `NAH_HANDBACK_PLACEHOLDER`). The plain form marks what it showed as seen;
   `--json` (for scripts) never does, so a monitoring script cannot hide a new hand-back from your next look. A dead
   machine reads "unreachable" after a timeout instead of hanging the call. A developer may write
-  HANDBACK.md before its last check ends: a READY report from an agent still working is judged once it is idle (the
-  checksum shows a rewrite). Then the last commit on its branch. An idle developer with a report newer
+  HANDBACK.md before its last check ends: a row marked "READY but agent still working: do not take in" is judged once
+  the agent is idle (the checksum shows a rewrite); "done, no hand-back" needs a look at the pane. Then the last commit on its branch. An idle developer with a report newer
   than your prompt has handed back: fetch and judge it now. Check too that this session still has the Herdr name the
   developers report to (`herdr agent list` here; `herdr agent rename <pane> <name>` restores it): a model switch or a
   restart can clear it, and then no report reaches you. Never tell the user a developer is working without this check.
