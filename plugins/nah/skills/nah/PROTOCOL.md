@@ -56,6 +56,7 @@ After approval:
 2. Use `tk create` with a concise description and acceptance criteria; add `--design` only for non-obvious design notes.
 3. Capture ticket-specific validation expectations in the ticket when they differ from the repo's normal flow.
 4. Wire dependencies with `tk dep`.
+4b. Lean each ticket ("Lean pass", on the ticket): every item traces to the agreed outcome, and its `Left out:` line is written.
 5. Present the ticket tree to the user.
 6. The developer launches only after the user approves the created tickets with `approved` or `approve`.
 7. Just before the first developer launch, create a new implementation branch when the current branch is exactly `main` or `master`; on any other branch, ask the user.
@@ -102,7 +103,7 @@ For each ready ticket:
 3. The developer cannot ask questions mid-run. If its report is a blocker, answer it and re-dispatch with the decision included.
 4. The ticket is met when every acceptance criterion shows in the diff; read the diff yourself when the report is thin.
 5. Send focused corrections back as a new dispatch when a criterion is missing.
-5b. Run the lean pass (below), then send its items with your corrections in one dispatch.
+5b. Run the lean pass on the diff (below), lean your own corrections the same way (what is broken, nothing else), then send both in one dispatch.
 6. `tk close <id>` when the ticket's intent is met, and not while its notes hold a fact of a ledger kind that is in neither the ledger nor a new ticket. Record decisions with `tk add-note`.
 7. `codex-role.sh code-reviewer` as a checkpoint for high-risk tickets.
 
@@ -110,11 +111,29 @@ One `nah:nah-developer` dispatch per cwd at a time; read-only roles run in paral
 
 ## Lean pass
 
-On each hand-back and before the cross-model review, dispatch a separate read-only agent (`general-purpose`; the
-architect wrote the brief and would review its own framing) that invokes the `ponytail-review` skill on the ticket's
-diff (`git diff <base>..HEAD` in the worktree) and returns the report verbatim. It asks what to cut, what breaks
-under load and what has no failing test; its must-fix and should-fix items go to the developer, taste is dropped.
-The cross-model review then reviews the lean version.
+Lean runs twice: on the ticket before it is shown, and on the diff before it is reviewed. The ticket comes first and
+matters more: a developer builds what the ticket says, so a pass on the diff can only trim what the ticket required.
+
+**On the ticket**, before the ticket-tree gate and before every correction dispatch. Take each acceptance criterion,
+design note and correction item in turn and ask the first rung of ponytail's ladder: does the outcome the user agreed
+need this?
+
+- Keep an item that traces to a sentence of the agreed outcome.
+- Strike the rest, and name each with its reason in a `Left out:` line of the ticket, so the user's approval covers
+  what is absent as well as what is present.
+- A setting, option, state or screen that serves something still unbuilt is struck until that thing exists.
+- A correction dispatch carries what is broken: a missed criterion, a defect, a failed check. Polish and a reviewer's
+  preferences go to a note, or nowhere.
+
+The ticket is lean when every remaining item traces to the agreed outcome and the `Left out:` line is written (`Left
+out: nothing` when nothing was struck).
+
+**On the diff**, on each hand-back and before the cross-model review, as a step of its own. Dispatch a separate
+read-only agent (`general-purpose`; the architect wrote the brief and would review its own framing) that invokes the
+`ponytail-review` skill on the ticket's diff (`git diff <base>..HEAD` in the worktree) and returns the report
+verbatim. It asks first what could be deleted whole with every acceptance criterion still met (a file, an option, a
+state, a setting), then what to cut, what breaks under load and what has no failing test; its must-fix and
+should-fix items go to the developer, taste is dropped. The cross-model review then reviews the lean version.
 
 ## Scope
 

@@ -15,6 +15,7 @@ You implement exactly one approved `tk` ticket at a time. Run `tk show <id>` and
 - Treat pre-existing worktree and index changes as human-owned. Do not use `git stash`, `git restore`, `git reset`, non-dry-run `git clean`, or checkout/switch discard or force options against pre-existing state.
 - Preserve unrelated state while implementing the ticket.
 - Implement only what the assigned ticket asks for. No future tasks, nice-to-haves, speculative refactors, or unrelated cleanup.
+- Build the smallest thing that meets the acceptance criteria. When an item of the ticket looks unnecessary for them, report it as a question in your hand-back and build the rest.
 - Keep changes small, cohesive, and easy to review.
 - Follow existing repository conventions for structure, naming, formatting, tests, and error handling.
 - When the project keeps a developer ledger (its `.nah/docs.md` names it and the command that lists entries for a set of paths), read the entries for the files your ticket touches before editing. An entry the existing code already contradicts is a finding: correct it in the same ticket. An entry your change would break is a blocker unless the ticket says to change it.

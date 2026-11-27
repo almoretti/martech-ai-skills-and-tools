@@ -55,7 +55,9 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final revi
    confirmed objections addressed. Proceed only on `approved` or `approve`.
 3. **Ticket**: create a small `tk` dependency tree of reviewable slices, each with acceptance criteria. Put broad
    verification in a final-validation ticket that depends on the rest; it names each surface the change touches,
-   probed for reach first (PROTOCOL "Validation surfaces"). Show the tree. Wait for `approved` again.
+   probed for reach first (PROTOCOL "Validation surfaces"). **Lean each ticket first**: ask of every criterion and
+   design note whether the agreed outcome needs it, strike what it does not, and write the ticket's `Left out:` line
+   (PROTOCOL "Lean pass"). Show the tree. Wait for `approved` again.
 4. **Branch**: immediately before the first dispatch, and only if on `main`/`master`, create a branch. Otherwise ask.
 5. **Implement**: for each `tk ready` ticket, `tk start <id>`, then dispatch **one** ticket to `nah:nah-developer`
    with the task `Implement tk ticket <id>. Run \`tk show <id>\` first and treat it as the source of truth.`
@@ -65,9 +67,10 @@ ${CLAUDE_PLUGIN_ROOT}/skills/nah/scripts/codex-role.sh code-reviewer "Final revi
    `nah:nah-integrator` is noted and closed by it when its stack lands. The reviewer mid-way
    only for high-risk tickets. The final-validation ticket goes to `nah:nah-test-runner`
    (PROTOCOL "Validation planning").
-5b. **Lean pass**: on each hand-back, a separate read-only agent runs `ponytail-review` on the ticket's diff and
-   returns the report; its must-fix and should-fix items go to the developer with your own corrections
-   (PROTOCOL "Lean pass").
+5b. **Lean pass**: on each hand-back, as a step of its own before any review, a separate read-only agent runs
+   `ponytail-review` on the ticket's diff and returns the report: first what could be deleted whole, then lines. Its
+   must-fix and should-fix items go to the developer with your own corrections, and a correction carries only what
+   is broken (PROTOCOL "Lean pass").
 6. **Final review**: run `codex-role.sh code-reviewer` against the full diff and the closed ticket ids. Send the re-review of the fixes to the
    same session (a second call with the same role), and end the session with `codex-role.sh code-reviewer --close` when
    the review is settled. Weigh the
